@@ -7,8 +7,14 @@ import android.media.AudioTrack
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
+import android.os.Handler
+import android.os.Looper
 
-class HondaMediaSession(context: Context) {
+class HondaMediaSession(
+    context: Context,
+    onNext: () -> Unit,
+    onPrevious: () -> Unit,
+) {
     private val audioAttributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_MEDIA)
         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -21,12 +27,18 @@ class HondaMediaSession(context: Context) {
                 MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS,
         )
         setPlaybackToLocal(audioAttributes)
+        setCallback(
+            object : MediaSession.Callback() {
+                override fun onSkipToNext() = onNext()
+
+                override fun onSkipToPrevious() = onPrevious()
+            },
+            Handler(Looper.getMainLooper()),
+        )
     }
 
-    fun showMessage(sender: String, message: String) {
+    fun showMessage(displayText: HondaDisplayText) {
         stopSilentPlayback()
-
-        val displayText = MessageFormatter.format(sender, message)
 
         session.isActive = true
         session.setMetadata(
@@ -39,7 +51,10 @@ class HondaMediaSession(context: Context) {
         session.setPlaybackState(
             PlaybackState.Builder()
                 .setState(PlaybackState.STATE_PLAYING, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1f)
-                .setActions(0L)
+                .setActions(
+                    PlaybackState.ACTION_SKIP_TO_NEXT or
+                        PlaybackState.ACTION_SKIP_TO_PREVIOUS,
+                )
                 .build(),
         )
         startSilentPlayback()

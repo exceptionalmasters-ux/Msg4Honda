@@ -3,25 +3,18 @@ package pl.msg4honda
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import java.util.ArrayDeque
-
-data class IncomingMessage(
-    val notificationKey: String,
-    val sender: String,
-    val text: String,
-)
 
 object MessageDisplayCoordinator {
-    // Adjust after the first real test in the Honda.
-    private const val DISPLAY_TIME_MS = 5_000L
-    private const val BETWEEN_MESSAGES_MS = 400L
+    private const val IDLE_TIMEOUT_MS = 5_000L
     private const val MAX_RECENT_KEYS = 100
 
     private val handler = Handler(Looper.getMainLooper())
-    private val queue = ArrayDeque<IncomingMessage>()
+    private val pages = mutableListOf<HondaDisplayText>()
     private val recentKeys = LinkedHashSet<String>()
+    private var currentPage = 0
     private var mediaSession: HondaMediaSession? = null
     private var displaying = false
+    private var timeout: Runnable? = null
 
     @Synchronized
     fun enqueue(context: Context, notificationKey: String, sender: String, message: String) {
@@ -31,21 +24,16 @@ object MessageDisplayCoordinator {
             recentKeys.remove(recentKeys.first())
         }
 
-        queue.addLast(
-            IncomingMessage(
-                notificationKey = notificationKey,
-                sender = sender,
-                text = message,
-            ),
-        )
-
-        handler.post { showNext(context.applicationContext) }
+        pages += MessageFormatter.formatPages(sender, message)
+        handler.post { activate(context.applicationContext) }
     }
 
     @Synchronized
     fun stop(context: Context) {
-        handler.removeCallbacksAndMessages(null)
-        queue.clear()
+        timeout?.let(handler::removeCallbacks)
+        timeout = null
+        pages.clear()
+        currentPage = 0
         displaying = false
         mediaSession?.hide()
         mediaSession?.release()
@@ -53,20 +41,63 @@ object MessageDisplayCoordinator {
     }
 
     @Synchronized
-    private fun showNext(context: Context) {
-        if (displaying || queue.isEmpty() || !AppState.isEnabled(context)) return
+    private fun activate(context: Context) {
+        if (pages.isEmpty() || !AppState.isEnabled(context)) return
 
-        val next = queue.removeFirst()
+        if (displaying) {
+            restartTimeout()
+            return
+        }
+
         displaying = true
-        val session = mediaSession ?: HondaMediaSession(context).also { mediaSession = it }
-        session.showMessage(next.sender, next.text)
+        currentPage = 0
+        val session = mediaSession ?: HondaMediaSession(
+            context = context,
+            onNext = { moveNext() },
+            onPrevious = { movePrevious() },
+        ).also { mediaSession = it }
+        session.showMessage(pages[currentPage])
+        restartTimeout()
+    }
 
-        handler.postDelayed({
-            synchronized(this) {
-                session.hide()
-                displaying = false
-            }
-            handler.postDelayed({ showNext(context) }, BETWEEN_MESSAGES_MS)
-        }, DISPLAY_TIME_MS)
+    @Synchronized
+    private fun moveNext() {
+        if (!displaying || pages.isEmpty()) return
+
+        if (currentPage == pages.lastIndex) {
+            expire()
+            return
+        }
+
+        currentPage += 1
+        mediaSession?.showMessage(pages[currentPage])
+        restartTimeout()
+    }
+
+    @Synchronized
+    private fun movePrevious() {
+        if (!displaying || pages.isEmpty()) return
+
+        if (currentPage > 0) currentPage -= 1
+        mediaSession?.showMessage(pages[currentPage])
+        restartTimeout()
+    }
+
+    @Synchronized
+    private fun restartTimeout() {
+        timeout?.let(handler::removeCallbacks)
+        timeout = Runnable { expire() }.also {
+            handler.postDelayed(it, IDLE_TIMEOUT_MS)
+        }
+    }
+
+    @Synchronized
+    private fun expire() {
+        timeout?.let(handler::removeCallbacks)
+        timeout = null
+        pages.clear()
+        currentPage = 0
+        displaying = false
+        mediaSession?.hide()
     }
 }

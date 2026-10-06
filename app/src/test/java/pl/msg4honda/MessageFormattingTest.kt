@@ -31,10 +31,13 @@ class MessageFormattingTest {
     }
 
     @Test
-    fun `limits message to two display lines`() {
-        val result = MessageFormatter.format("Jan", "a".repeat(80))
+    fun `splits a very long message into multiple pages`() {
+        val result = MessageFormatter.formatPages("Jan", "a".repeat(80))
 
-        assertEquals(24, result.messageLine1.length)
-        assertEquals(24, result.messageLine2.length)
+        assertEquals(2, result.size)
+        assertEquals(24, result[0].messageLine1.length)
+        assertEquals(24, result[0].messageLine2.length)
+        assertEquals(24, result[1].messageLine1.length)
+        assertEquals(8, result[1].messageLine2.length)
     }
 }

@@ -10,8 +10,10 @@ zawiera nadawcę i napis WhatsApp, a treść zajmuje dwie kolejne linie.
 - Samsung Galaxy A53 5G, Android 14 / One UI 6.1
 - źródło muzyki: Spotify
 - jeden przycisk START/STOP
-- wiadomości wyświetlane kolejno przez 5 sekund
-- maksymalnie 48 znaków wiadomości podzielonych na dwie linie
+- wiadomości są dzielone na dwuliniowe strony po 48 znaków
+- przyciski następny/poprzedni na radiu zmieniają stronę lub wiadomość
+- każde kliknięcie rozpoczyna od nowa 5 sekund czasu na czytanie
+- po 5 sekundach bezczynności wszystkie strony są usuwane i wraca Spotify
 - brak uprawnienia `INTERNET`
 - brak zapisywania treści wiadomości
 - bezgłośny strumień wymuszający wybór sesji przez radio, ale bez przejmowania

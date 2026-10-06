@@ -10,28 +10,37 @@ object MessageFormatter {
     private const val LINE_LENGTH = 24
     private const val TITLE_LENGTH = 32
 
-    fun format(sender: String, message: String): HondaDisplayText {
+    fun format(sender: String, message: String): HondaDisplayText =
+        formatPages(sender, message).first()
+
+    fun formatPages(sender: String, message: String): List<HondaDisplayText> {
         val normalizedSender = sender.trim().replace(Regex("\\s+"), " ")
         val normalizedMessage = message.trim().replace(Regex("\\s+"), " ")
-        val lines = splitIntoTwoLines(normalizedMessage)
+        val title = "$normalizedSender • WhatsApp".take(TITLE_LENGTH)
+        val lines = wrapLines(normalizedMessage).ifEmpty { listOf("") }
 
-        return HondaDisplayText(
-            title = "$normalizedSender • WhatsApp".take(TITLE_LENGTH),
-            messageLine1 = lines.first,
-            messageLine2 = lines.second,
-        )
+        return lines.chunked(2).map { page ->
+            HondaDisplayText(
+                title = title,
+                messageLine1 = page[0],
+                messageLine2 = page.getOrElse(1) { "" },
+            )
+        }
     }
 
-    private fun splitIntoTwoLines(text: String): Pair<String, String> {
-        if (text.length <= LINE_LENGTH) return text to ""
+    private fun wrapLines(text: String): List<String> {
+        val lines = mutableListOf<String>()
+        var remainder = text
 
-        val visibleText = text.take(LINE_LENGTH * 2)
-        val firstBreak = visibleText.lastIndexOf(' ', startIndex = LINE_LENGTH)
-            .takeIf { it > 0 }
-            ?: LINE_LENGTH
-        val firstLine = visibleText.substring(0, firstBreak).trimEnd()
-        val remainder = visibleText.substring(firstBreak).trimStart()
+        while (remainder.length > LINE_LENGTH) {
+            val lineBreak = remainder.lastIndexOf(' ', startIndex = LINE_LENGTH)
+                .takeIf { it > 0 }
+                ?: LINE_LENGTH
+            lines += remainder.substring(0, lineBreak).trimEnd()
+            remainder = remainder.substring(lineBreak).trimStart()
+        }
 
-        return firstLine to remainder.take(LINE_LENGTH).trimEnd()
+        if (remainder.isNotEmpty()) lines += remainder
+        return lines
     }
 }
