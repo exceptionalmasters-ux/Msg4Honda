@@ -25,11 +25,76 @@
         android:textColor="@color/text_secondary"
         android:textSize="18sp" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:text="@string/message_sources"
+        android:textColor="@color/text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/whatsAppToggle"
+            android:layout_width="0dp"
+            android:layout_height="96dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/source_toggle_background"
+            android:button="@null"
+            android:drawableTop="@drawable/ic_whatsapp"
+            android:drawablePadding="8dp"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="@string/whatsapp"
+            android:textColor="@color/source_toggle_text"
+            android:textSize="13sp" />
+
+        <CheckBox
+            android:id="@+id/messengerToggle"
+            android:layout_width="0dp"
+            android:layout_height="96dp"
+            android:layout_marginHorizontal="3dp"
+            android:layout_weight="1"
+            android:background="@drawable/source_toggle_background"
+            android:button="@null"
+            android:drawableTop="@drawable/ic_messenger"
+            android:drawablePadding="8dp"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="@string/messenger"
+            android:textColor="@color/source_toggle_text"
+            android:textSize="13sp" />
+
+        <CheckBox
+            android:id="@+id/smsToggle"
+            android:layout_width="0dp"
+            android:layout_height="96dp"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/source_toggle_background"
+            android:button="@null"
+            android:drawableTop="@drawable/ic_sms"
+            android:drawablePadding="8dp"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="@string/sms_rcs"
+            android:textColor="@color/source_toggle_text"
+            android:textSize="13sp" />
+    </LinearLayout>
+
     <Button
         android:id="@+id/startStopButton"
         android:layout_width="220dp"
         android:layout_height="64dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="28dp"
         android:background="@drawable/start_button"
         android:text="@string/start"
         android:textColor="@android:color/white"

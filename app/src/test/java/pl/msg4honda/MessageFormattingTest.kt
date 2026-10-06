@@ -12,6 +12,13 @@ class MessageFormattingTest {
     }
 
     @Test
+    fun `puts selected source in title`() {
+        val result = MessageFormatter.format("Anna", "Hej", "Messenger")
+
+        assertEquals("Anna • Messenger", result.title)
+    }
+
+    @Test
     fun `keeps short message on one line`() {
         val result = MessageFormatter.format("Jan", "Cześć!")
 

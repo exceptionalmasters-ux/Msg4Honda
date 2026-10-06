@@ -19,7 +19,7 @@
         </activity>
 
         <service
-            android:name=".WhatsAppNotificationListener"
+            android:name=".MessageNotificationListener"
             android:exported="false"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">

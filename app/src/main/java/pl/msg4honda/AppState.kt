@@ -29,4 +29,15 @@ object AppState {
             .putString(KEY_LAST_EVENT, value)
             .apply()
     }
+
+    fun isSourceEnabled(context: Context, source: MessageSource): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(source.preferenceKey, true)
+
+    fun setSourceEnabled(context: Context, source: MessageSource, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(source.preferenceKey, enabled)
+            .apply()
+    }
 }

@@ -10,13 +10,17 @@ object MessageFormatter {
     private const val LINE_LENGTH = 24
     private const val TITLE_LENGTH = 32
 
-    fun format(sender: String, message: String): HondaDisplayText =
-        formatPages(sender, message).first()
+    fun format(sender: String, message: String, source: String = "WhatsApp"): HondaDisplayText =
+        formatPages(sender, message, source).first()
 
-    fun formatPages(sender: String, message: String): List<HondaDisplayText> {
+    fun formatPages(
+        sender: String,
+        message: String,
+        source: String = "WhatsApp",
+    ): List<HondaDisplayText> {
         val normalizedSender = sender.trim().replace(Regex("\\s+"), " ")
         val normalizedMessage = message.trim().replace(Regex("\\s+"), " ")
-        val title = "$normalizedSender • WhatsApp".take(TITLE_LENGTH)
+        val title = "$normalizedSender • $source".take(TITLE_LENGTH)
         val lines = wrapLines(normalizedMessage).ifEmpty { listOf("") }
 
         return lines.chunked(2).map { page ->

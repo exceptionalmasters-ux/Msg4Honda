@@ -4,9 +4,12 @@ import android.app.Notification
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 
-class WhatsAppNotificationListener : NotificationListenerService() {
+class MessageNotificationListener : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification) {
-        if (!AppState.isEnabled(this) || sbn.packageName !in WHATSAPP_PACKAGES) return
+        if (!AppState.isEnabled(this)) return
+
+        val source = MessageSource.fromPackage(sbn.packageName) ?: return
+        if (!AppState.isSourceEnabled(this, source)) return
         if (sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY != 0) return
 
         val extras = sbn.notification.extras
@@ -28,20 +31,13 @@ class WhatsAppNotificationListener : NotificationListenerService() {
 
         if (sender.isBlank() || message.isBlank()) return
 
-        AppState.setLastEvent(this, "WhatsApp: $sender")
-
+        AppState.setLastEvent(this, "${source.displayName}: $sender")
         MessageDisplayCoordinator.enqueue(
             context = this,
-            notificationKey = "${sbn.key}|$sender|$message",
+            notificationKey = "${sbn.packageName}|${sbn.key}|$sender|$message",
             sender = sender,
             message = message,
-        )
-    }
-
-    companion object {
-        private val WHATSAPP_PACKAGES = setOf(
-            "com.whatsapp",
-            "com.whatsapp.w4b",
+            source = source.displayName,
         )
     }
 }

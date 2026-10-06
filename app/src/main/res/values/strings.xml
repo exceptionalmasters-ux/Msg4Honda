@@ -6,6 +6,10 @@
     <string name="start">START</string>
     <string name="stop">STOP</string>
     <string name="permission_hint">Po naciśnięciu START zezwól aplikacji Msg4Honda na dostęp do powiadomień.</string>
-    <string name="privacy_hint">Tylko WhatsApp • bez internetu • wiadomości nie są zapisywane</string>
+    <string name="message_sources">Źródła wiadomości</string>
+    <string name="whatsapp">WhatsApp</string>
+    <string name="messenger">Messenger</string>
+    <string name="sms_rcs">SMS / RCS</string>
+    <string name="privacy_hint">Tylko wybrane źródła • bez internetu • wiadomości nie są zapisywane</string>
     <string name="test_sent">wysłano test do radia</string>
 </resources>

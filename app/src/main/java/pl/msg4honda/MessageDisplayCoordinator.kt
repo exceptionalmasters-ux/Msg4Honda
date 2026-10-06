@@ -18,14 +18,20 @@ object MessageDisplayCoordinator {
     private var pendingAction: Runnable? = null
 
     @Synchronized
-    fun enqueue(context: Context, notificationKey: String, sender: String, message: String) {
+    fun enqueue(
+        context: Context,
+        notificationKey: String,
+        sender: String,
+        message: String,
+        source: String = "WhatsApp",
+    ) {
         if (!AppState.isEnabled(context) || !recentKeys.add(notificationKey)) return
 
         while (recentKeys.size > MAX_RECENT_KEYS) {
             recentKeys.remove(recentKeys.first())
         }
 
-        pages += MessageFormatter.formatPages(sender, message)
+        pages += MessageFormatter.formatPages(sender, message, source)
         handler.post { activate(context.applicationContext) }
     }
 

@@ -1,15 +1,16 @@
 # Msg4Honda
 
 Minimalna aplikacja Android dla Hondy Civic IX (2015). Odczytuje lokalne
-powiadomienia WhatsApp i na kilka sekund publikuje nadawcę oraz treść wiadomości
-jako metadane sesji multimedialnej widoczne przez Bluetooth AVRCP. Pierwsza linia
-zawiera nadawcę i napis WhatsApp, a treść zajmuje dwie kolejne linie.
+powiadomienia WhatsApp, Messengera oraz SMS/RCS i publikuje nadawcę oraz treść
+wiadomości jako metadane sesji multimedialnej widoczne przez Bluetooth AVRCP.
+Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolejne linie.
 
 ## Założenia MVP
 
 - Samsung Galaxy A53 5G, Android 14 / One UI 6.1
 - źródło muzyki: Spotify
 - jeden przycisk START/STOP
+- osobne przełączniki WhatsApp, Messenger i SMS/RCS
 - wiadomości są dzielone na dwuliniowe strony po 48 znaków
 - kolejne strony pojawiają się automatycznie co 2 sekundy
 - przyciski następny/poprzedni na radiu zmieniają stronę lub wiadomość
@@ -36,12 +37,12 @@ Actions buduje również artefakt `Msg4Honda-debug` po każdym pushu do `main`.
 1. Sparuj telefon z Hondą i uruchom muzykę ze Spotify.
 2. Uruchom Msg4Honda i naciśnij START.
 3. Przy pierwszym uruchomieniu przyznaj dostęp do powiadomień.
-4. Wyślij testową wiadomość WhatsApp z innego telefonu.
+4. Wyślij testową wiadomość z jednego z włączonych źródeł.
 5. Sprawdź, czy radio pokazuje treść bez przerwania muzyki i czy po 5 sekundach
    wracają metadane Spotify.
 
 Jeśli komunikat „Test połączenia” pojawia się po naciśnięciu START, ale
-wiadomość WhatsApp nie, należy sprawdzić status „Ostatnio” w aplikacji. Pozwala
+wiadomość nie, należy sprawdzić status „Ostatnio” w aplikacji. Pozwala
 to rozróżnić problem powiadomień od problemu sesji Bluetooth.
 
 To jest eksperymentalny MVP. Priorytet sesji multimedialnej i sposób

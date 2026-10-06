@@ -8,12 +8,16 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.TextView
 
 class MainActivity : Activity() {
     private lateinit var statusText: TextView
     private lateinit var startStopButton: Button
     private lateinit var permissionHint: TextView
+    private lateinit var whatsAppToggle: CheckBox
+    private lateinit var messengerToggle: CheckBox
+    private lateinit var smsToggle: CheckBox
     private var waitingForPermission = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,6 +27,13 @@ class MainActivity : Activity() {
         statusText = findViewById(R.id.statusText)
         startStopButton = findViewById(R.id.startStopButton)
         permissionHint = findViewById(R.id.permissionHint)
+        whatsAppToggle = findViewById(R.id.whatsAppToggle)
+        messengerToggle = findViewById(R.id.messengerToggle)
+        smsToggle = findViewById(R.id.smsToggle)
+
+        bindSourceToggle(whatsAppToggle, MessageSource.WHATSAPP)
+        bindSourceToggle(messengerToggle, MessageSource.MESSENGER)
+        bindSourceToggle(smsToggle, MessageSource.SMS)
 
         startStopButton.setOnClickListener {
             if (AppState.isEnabled(this)) {
@@ -49,7 +60,7 @@ class MainActivity : Activity() {
 
     private fun hasNotificationAccess(): Boolean {
         val manager = getSystemService(NotificationManager::class.java)
-        val listener = ComponentName(this, WhatsAppNotificationListener::class.java)
+        val listener = ComponentName(this, MessageNotificationListener::class.java)
         return manager.isNotificationListenerAccessGranted(listener)
     }
 
@@ -77,7 +88,15 @@ class MainActivity : Activity() {
             notificationKey = "test-${System.currentTimeMillis()}",
             sender = "Msg4Honda",
             message = "Test połączenia",
+            source = "Test",
         )
         renderState()
+    }
+
+    private fun bindSourceToggle(toggle: CheckBox, source: MessageSource) {
+        toggle.isChecked = AppState.isSourceEnabled(this, source)
+        toggle.setOnCheckedChangeListener { _, enabled ->
+            AppState.setSourceEnabled(this, source, enabled)
+        }
     }
 }
