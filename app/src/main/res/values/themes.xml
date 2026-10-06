@@ -1,0 +1,10 @@
+<resources>
+    <style name="Theme.Msg4Honda" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@color/screen_background</item>
+        <item name="android:navigationBarColor">@color/screen_background</item>
+        <item name="android:colorAccent">@color/honda_blue</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+</resources>

@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Msg4Honda</string>
+    <string name="status_on">Aktywna — oczekiwanie na wiadomość</string>
+    <string name="status_off">Wyłączona</string>
+    <string name="start">START</string>
+    <string name="stop">STOP</string>
+    <string name="permission_hint">Po naciśnięciu START zezwól aplikacji Msg4Honda na dostęp do powiadomień.</string>
+    <string name="privacy_hint">Tylko WhatsApp • bez internetu • wiadomości nie są zapisywane</string>
+</resources>

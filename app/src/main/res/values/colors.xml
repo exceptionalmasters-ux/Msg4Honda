@@ -1,0 +1,7 @@
+<resources>
+    <color name="honda_blue">#0057B8</color>
+    <color name="honda_red">#CC0000</color>
+    <color name="screen_background">#F4F6F8</color>
+    <color name="text_primary">#171717</color>
+    <color name="text_secondary">#5F6368</color>
+</resources>
