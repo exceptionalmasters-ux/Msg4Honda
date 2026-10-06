@@ -5,7 +5,8 @@ import android.os.Handler
 import android.os.Looper
 
 object MessageDisplayCoordinator {
-    private const val IDLE_TIMEOUT_MS = 5_000L
+    private const val AUTO_ADVANCE_MS = 2_000L
+    private const val LAST_PAGE_TIME_MS = 5_000L
     private const val MAX_RECENT_KEYS = 100
 
     private val handler = Handler(Looper.getMainLooper())
@@ -14,7 +15,7 @@ object MessageDisplayCoordinator {
     private var currentPage = 0
     private var mediaSession: HondaMediaSession? = null
     private var displaying = false
-    private var timeout: Runnable? = null
+    private var pendingAction: Runnable? = null
 
     @Synchronized
     fun enqueue(context: Context, notificationKey: String, sender: String, message: String) {
@@ -30,8 +31,8 @@ object MessageDisplayCoordinator {
 
     @Synchronized
     fun stop(context: Context) {
-        timeout?.let(handler::removeCallbacks)
-        timeout = null
+        pendingAction?.let(handler::removeCallbacks)
+        pendingAction = null
         pages.clear()
         currentPage = 0
         displaying = false
@@ -45,7 +46,7 @@ object MessageDisplayCoordinator {
         if (pages.isEmpty() || !AppState.isEnabled(context)) return
 
         if (displaying) {
-            restartTimeout()
+            scheduleNextAction()
             return
         }
 
@@ -57,7 +58,7 @@ object MessageDisplayCoordinator {
             onPrevious = { movePrevious() },
         ).also { mediaSession = it }
         session.showMessage(pages[currentPage])
-        restartTimeout()
+        scheduleNextAction()
     }
 
     @Synchronized
@@ -71,7 +72,7 @@ object MessageDisplayCoordinator {
 
         currentPage += 1
         mediaSession?.showMessage(pages[currentPage])
-        restartTimeout()
+        scheduleNextAction()
     }
 
     @Synchronized
@@ -80,21 +81,35 @@ object MessageDisplayCoordinator {
 
         if (currentPage > 0) currentPage -= 1
         mediaSession?.showMessage(pages[currentPage])
-        restartTimeout()
+        scheduleNextAction()
     }
 
     @Synchronized
-    private fun restartTimeout() {
-        timeout?.let(handler::removeCallbacks)
-        timeout = Runnable { expire() }.also {
-            handler.postDelayed(it, IDLE_TIMEOUT_MS)
+    private fun scheduleNextAction() {
+        pendingAction?.let(handler::removeCallbacks)
+        val delay = if (currentPage < pages.lastIndex) AUTO_ADVANCE_MS else LAST_PAGE_TIME_MS
+        pendingAction = Runnable { advanceAutomatically() }.also {
+            handler.postDelayed(it, delay)
+        }
+    }
+
+    @Synchronized
+    private fun advanceAutomatically() {
+        if (!displaying || pages.isEmpty()) return
+
+        if (currentPage < pages.lastIndex) {
+            currentPage += 1
+            mediaSession?.showMessage(pages[currentPage])
+            scheduleNextAction()
+        } else {
+            expire()
         }
     }
 
     @Synchronized
     private fun expire() {
-        timeout?.let(handler::removeCallbacks)
-        timeout = null
+        pendingAction?.let(handler::removeCallbacks)
+        pendingAction = null
         pages.clear()
         currentPage = 0
         displaying = false

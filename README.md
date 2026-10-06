@@ -11,9 +11,10 @@ zawiera nadawcę i napis WhatsApp, a treść zajmuje dwie kolejne linie.
 - źródło muzyki: Spotify
 - jeden przycisk START/STOP
 - wiadomości są dzielone na dwuliniowe strony po 48 znaków
+- kolejne strony pojawiają się automatycznie co 2 sekundy
 - przyciski następny/poprzedni na radiu zmieniają stronę lub wiadomość
-- każde kliknięcie rozpoczyna od nowa 5 sekund czasu na czytanie
-- po 5 sekundach bezczynności wszystkie strony są usuwane i wraca Spotify
+- ręczna zmiana strony rozpoczyna od nowa automatyczne odliczanie
+- ostatnia strona znika po 5 sekundach, wszystkie strony są wtedy usuwane
 - brak uprawnienia `INTERNET`
 - brak zapisywania treści wiadomości
 - bezgłośny strumień wymuszający wybór sesji przez radio, ale bez przejmowania
