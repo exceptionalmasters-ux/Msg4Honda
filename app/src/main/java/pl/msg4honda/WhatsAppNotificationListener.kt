@@ -28,6 +28,8 @@ class WhatsAppNotificationListener : NotificationListenerService() {
 
         if (sender.isBlank() || message.isBlank()) return
 
+        AppState.setLastEvent(this, "WhatsApp: $sender")
+
         MessageDisplayCoordinator.enqueue(
             context = this,
             notificationKey = "${sbn.key}|$sender|$message",

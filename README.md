@@ -14,6 +14,8 @@ metadane sesji multimedialnej widoczne przez Bluetooth AVRCP.
 - brak uprawnienia `INTERNET`
 - brak zapisywania treści wiadomości
 - brak żądania audio focus — pierwsza próba ma nie przerywać Spotify
+- po naciśnięciu START aplikacja publikuje komunikat „Test połączenia”, co
+  pozwala sprawdzić radio bez czekania na wiadomość WhatsApp
 
 ## Budowanie
 
@@ -32,6 +34,10 @@ Actions buduje również artefakt `Msg4Honda-debug` po każdym pushu do `main`.
 4. Wyślij testową wiadomość WhatsApp z innego telefonu.
 5. Sprawdź, czy radio pokazuje treść bez przerwania muzyki i czy po 4 sekundach
    wracają metadane Spotify.
+
+Jeśli komunikat „Test połączenia” pojawia się po naciśnięciu START, ale
+wiadomość WhatsApp nie, należy sprawdzić status „Ostatnio” w aplikacji. Pozwala
+to rozróżnić problem powiadomień od problemu sesji Bluetooth.
 
 To jest eksperymentalny MVP. Priorytet sesji multimedialnej i sposób
 wyświetlania AVRCP zależą od oprogramowania telefonu i radia.

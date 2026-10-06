@@ -30,8 +30,7 @@ class MainActivity : Activity() {
                 MessageDisplayCoordinator.stop(this)
                 renderState()
             } else if (hasNotificationAccess()) {
-                AppState.setEnabled(this, true)
-                renderState()
+                enableAndTest()
             } else {
                 waitingForPermission = true
                 startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
@@ -43,7 +42,7 @@ class MainActivity : Activity() {
         super.onResume()
         if (waitingForPermission && hasNotificationAccess()) {
             waitingForPermission = false
-            AppState.setEnabled(this, true)
+            enableAndTest()
         }
         renderState()
     }
@@ -56,12 +55,29 @@ class MainActivity : Activity() {
 
     private fun renderState() {
         val enabled = AppState.isEnabled(this)
-        statusText.setText(if (enabled) R.string.status_on else R.string.status_off)
+        val lastEvent = AppState.lastEvent(this)
+        statusText.text = when {
+            !enabled -> getString(R.string.status_off)
+            lastEvent.isBlank() -> getString(R.string.status_on)
+            else -> getString(R.string.status_on_with_event, lastEvent)
+        }
         startStopButton.setText(if (enabled) R.string.stop else R.string.start)
         permissionHint.visibility = if (hasNotificationAccess()) {
             View.GONE
         } else {
             View.VISIBLE
         }
+    }
+
+    private fun enableAndTest() {
+        AppState.setEnabled(this, true)
+        AppState.setLastEvent(this, getString(R.string.test_sent))
+        MessageDisplayCoordinator.enqueue(
+            context = this,
+            notificationKey = "test-${System.currentTimeMillis()}",
+            sender = "Msg4Honda",
+            message = "Test połączenia",
+        )
+        renderState()
     }
 }

@@ -14,6 +14,9 @@ class HondaMediaSession(context: Context) {
     }
 
     fun showMessage(sender: String, message: String) {
+        // Activate first so metadata and playback-state changes are emitted as
+        // AVRCP updates instead of being prepared on an inactive session.
+        session.isActive = true
         session.setMetadata(
             MediaMetadata.Builder()
                 .putString(MediaMetadata.METADATA_KEY_TITLE, message)
@@ -27,8 +30,6 @@ class HondaMediaSession(context: Context) {
                 .setActions(0L)
                 .build(),
         )
-        // Do not request audio focus: Spotify should keep playing.
-        session.isActive = true
     }
 
     fun hide() {
