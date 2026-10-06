@@ -18,6 +18,7 @@ class MainActivity : Activity() {
     private lateinit var whatsAppToggle: CheckBox
     private lateinit var messengerToggle: CheckBox
     private lateinit var smsToggle: CheckBox
+    private lateinit var mapsToggle: CheckBox
     private var waitingForPermission = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,10 +31,12 @@ class MainActivity : Activity() {
         whatsAppToggle = findViewById(R.id.whatsAppToggle)
         messengerToggle = findViewById(R.id.messengerToggle)
         smsToggle = findViewById(R.id.smsToggle)
+        mapsToggle = findViewById(R.id.mapsToggle)
 
         bindSourceToggle(whatsAppToggle, MessageSource.WHATSAPP)
         bindSourceToggle(messengerToggle, MessageSource.MESSENGER)
         bindSourceToggle(smsToggle, MessageSource.SMS)
+        bindSourceToggle(mapsToggle, MessageSource.MAPS)
 
         startStopButton.setOnClickListener {
             if (AppState.isEnabled(this)) {

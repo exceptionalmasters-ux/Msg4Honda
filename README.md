@@ -1,8 +1,8 @@
 # Msg4Honda
 
 Minimalna aplikacja Android dla Hondy Civic IX (2015). Odczytuje lokalne
-powiadomienia WhatsApp, Messengera oraz SMS/RCS i publikuje nadawcę oraz treść
-wiadomości jako metadane sesji multimedialnej widoczne przez Bluetooth AVRCP.
+powiadomienia WhatsApp, Messengera, SMS/RCS oraz nawigacji Google Maps i publikuje
+je jako metadane sesji multimedialnej widoczne przez Bluetooth AVRCP.
 Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolejne linie.
 
 ## Założenia MVP
@@ -10,12 +10,14 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - Samsung Galaxy A53 5G, Android 14 / One UI 6.1
 - źródło muzyki: Spotify
 - jeden przycisk START/STOP
-- osobne przełączniki WhatsApp, Messenger i SMS/RCS
+- osobne przełączniki WhatsApp, Messenger, SMS/RCS i Google Maps
 - wiadomości są dzielone na dwuliniowe strony po 48 znaków
 - kolejne strony pojawiają się automatycznie co 2 sekundy
 - przyciski następny/poprzedni na radiu zmieniają stronę lub wiadomość
 - ręczna zmiana strony rozpoczyna od nowa automatyczne odliczanie
 - ostatnia strona znika po 5 sekundach, wszystkie strony są wtedy usuwane
+- wskazówki Map pokazują czas dojazdu, manewr z odległością i ulicę/kierunek;
+  nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki
 - brak uprawnienia `INTERNET`
 - brak zapisywania treści wiadomości
 - bezgłośny strumień wymuszający wybór sesji przez radio, ale bez przejmowania

@@ -24,6 +24,11 @@ enum class MessageSource(
             "com.android.mms",
         ),
     ),
+    MAPS(
+        displayName = "Maps",
+        preferenceKey = "source_maps",
+        packageNames = setOf("com.google.android.apps.maps"),
+    ),
     ;
 
     companion object {

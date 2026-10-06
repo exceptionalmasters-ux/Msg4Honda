@@ -12,6 +12,11 @@ class MessageNotificationListener : NotificationListenerService() {
         if (!AppState.isSourceEnabled(this, source)) return
         if (sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY != 0) return
 
+        if (source == MessageSource.MAPS) {
+            handleMapsNotification(sbn)
+            return
+        }
+
         val extras = sbn.notification.extras
         val latestMessage = extras.getParcelableArray(Notification.EXTRA_MESSAGES)
             ?.let(Notification.MessagingStyle.Message::getMessagesFromBundleArray)
@@ -39,5 +44,22 @@ class MessageNotificationListener : NotificationListenerService() {
             message = message,
             source = source.displayName,
         )
+    }
+
+    private fun handleMapsNotification(sbn: StatusBarNotification) {
+        val extras = sbn.notification.extras
+        val values = listOfNotNull(
+            extras.getCharSequence(Notification.EXTRA_TITLE),
+            extras.getCharSequence(Notification.EXTRA_TEXT),
+            extras.getCharSequence(Notification.EXTRA_BIG_TEXT),
+            extras.getCharSequence(Notification.EXTRA_SUB_TEXT),
+            extras.getCharSequence(Notification.EXTRA_INFO_TEXT),
+            extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT),
+            sbn.notification.tickerText,
+        ).map(CharSequence::toString)
+
+        val navigation = MapsNotificationParser.parse(values) ?: return
+        AppState.setLastEvent(this, "Maps: ${values.joinToString(" | ").take(120)}")
+        MessageDisplayCoordinator.showNavigation(this, navigation)
     }
 }
