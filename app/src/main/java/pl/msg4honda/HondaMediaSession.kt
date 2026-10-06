@@ -35,12 +35,14 @@ class HondaMediaSession(context: Context) {
         stopSilentPlayback()
         audioManager.requestAudioFocus(focusRequest)
 
+        val displayText = MessageFormatter.format(sender, message)
+
         session.isActive = true
         session.setMetadata(
             MediaMetadata.Builder()
-                .putString(MediaMetadata.METADATA_KEY_TITLE, message)
-                .putString(MediaMetadata.METADATA_KEY_ARTIST, sender)
-                .putString(MediaMetadata.METADATA_KEY_ALBUM, "WhatsApp")
+                .putString(MediaMetadata.METADATA_KEY_TITLE, displayText.title)
+                .putString(MediaMetadata.METADATA_KEY_ARTIST, displayText.messageLine1)
+                .putString(MediaMetadata.METADATA_KEY_ALBUM, displayText.messageLine2)
                 .build(),
         )
         session.setPlaybackState(

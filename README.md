@@ -1,8 +1,9 @@
 # Msg4Honda
 
 Minimalna aplikacja Android dla Hondy Civic IX (2015). Odczytuje lokalne
-powiadomienia WhatsApp i na kilka sekund publikuje treść wiadomości jako
-metadane sesji multimedialnej widoczne przez Bluetooth AVRCP.
+powiadomienia WhatsApp i na kilka sekund publikuje nadawcę oraz treść wiadomości
+jako metadane sesji multimedialnej widoczne przez Bluetooth AVRCP. Pierwsza linia
+zawiera nadawcę i napis WhatsApp, a treść zajmuje dwie kolejne linie.
 
 ## Założenia MVP
 
@@ -10,7 +11,7 @@ metadane sesji multimedialnej widoczne przez Bluetooth AVRCP.
 - źródło muzyki: Spotify
 - jeden przycisk START/STOP
 - wiadomości wyświetlane kolejno przez 2,5 sekundy
-- maksymalnie 48 znaków tekstu i nadawcy
+- maksymalnie 48 znaków wiadomości podzielonych na dwie linie
 - brak uprawnienia `INTERNET`
 - brak zapisywania treści wiadomości
 - krótkie przejęcie audio focus i bezgłośny strumień wymuszający wybór sesji
