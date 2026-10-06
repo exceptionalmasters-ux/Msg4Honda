@@ -14,8 +14,8 @@ zawiera nadawcę i napis WhatsApp, a treść zajmuje dwie kolejne linie.
 - maksymalnie 48 znaków wiadomości podzielonych na dwie linie
 - brak uprawnienia `INTERNET`
 - brak zapisywania treści wiadomości
-- krótkie przejęcie audio focus i bezgłośny strumień wymuszający wybór sesji
-  przez radio; Spotify powinno wznowić odtwarzanie po 2,5 sekundy
+- bezgłośny strumień wymuszający wybór sesji przez radio, ale bez przejmowania
+  audio focus; Spotify powinno odtwarzać muzykę bez przerwy
 - po naciśnięciu START aplikacja publikuje komunikat „Test połączenia”, co
   pozwala sprawdzić radio bez czekania na wiadomość WhatsApp
 
@@ -34,7 +34,7 @@ Actions buduje również artefakt `Msg4Honda-debug` po każdym pushu do `main`.
 2. Uruchom Msg4Honda i naciśnij START.
 3. Przy pierwszym uruchomieniu przyznaj dostęp do powiadomień.
 4. Wyślij testową wiadomość WhatsApp z innego telefonu.
-5. Sprawdź, czy radio pokazuje treść i czy po 2,5 sekundy
+5. Sprawdź, czy radio pokazuje treść bez przerwania muzyki i czy po 2,5 sekundy
    wracają metadane Spotify.
 
 Jeśli komunikat „Test połączenia” pojawia się po naciśnięciu START, ale

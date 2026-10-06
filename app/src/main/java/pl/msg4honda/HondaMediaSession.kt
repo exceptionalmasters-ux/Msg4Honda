@@ -2,24 +2,16 @@ package pl.msg4honda
 
 import android.content.Context
 import android.media.AudioAttributes
-import android.media.AudioFocusRequest
 import android.media.AudioFormat
-import android.media.AudioManager
 import android.media.AudioTrack
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 
 class HondaMediaSession(context: Context) {
-    private val audioManager = context.getSystemService(AudioManager::class.java)
     private val audioAttributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_MEDIA)
-        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-        .build()
-    private val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-        .setAudioAttributes(audioAttributes)
-        .setOnAudioFocusChangeListener { }
-        .setWillPauseWhenDucked(true)
+        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
         .build()
     private var silentTrack: AudioTrack? = null
 
@@ -33,7 +25,6 @@ class HondaMediaSession(context: Context) {
 
     fun showMessage(sender: String, message: String) {
         stopSilentPlayback()
-        audioManager.requestAudioFocus(focusRequest)
 
         val displayText = MessageFormatter.format(sender, message)
 
@@ -63,12 +54,10 @@ class HondaMediaSession(context: Context) {
         )
         session.isActive = false
         stopSilentPlayback()
-        audioManager.abandonAudioFocusRequest(focusRequest)
     }
 
     fun release() {
         stopSilentPlayback()
-        audioManager.abandonAudioFocusRequest(focusRequest)
         session.release()
     }
 
