@@ -13,7 +13,7 @@ data class IncomingMessage(
 
 object MessageDisplayCoordinator {
     // Adjust after the first real test in the Honda.
-    private const val DISPLAY_TIME_MS = 4_000L
+    private const val DISPLAY_TIME_MS = 2_500L
     private const val BETWEEN_MESSAGES_MS = 400L
     private const val MAX_TEXT_LENGTH = 48
     private const val MAX_RECENT_KEYS = 100

@@ -9,11 +9,12 @@ metadane sesji multimedialnej widoczne przez Bluetooth AVRCP.
 - Samsung Galaxy A53 5G, Android 14 / One UI 6.1
 - źródło muzyki: Spotify
 - jeden przycisk START/STOP
-- wiadomości wyświetlane kolejno przez 4 sekundy
+- wiadomości wyświetlane kolejno przez 2,5 sekundy
 - maksymalnie 48 znaków tekstu i nadawcy
 - brak uprawnienia `INTERNET`
 - brak zapisywania treści wiadomości
-- brak żądania audio focus — pierwsza próba ma nie przerywać Spotify
+- krótkie przejęcie audio focus i bezgłośny strumień wymuszający wybór sesji
+  przez radio; Spotify powinno wznowić odtwarzanie po 2,5 sekundy
 - po naciśnięciu START aplikacja publikuje komunikat „Test połączenia”, co
   pozwala sprawdzić radio bez czekania na wiadomość WhatsApp
 
@@ -32,7 +33,7 @@ Actions buduje również artefakt `Msg4Honda-debug` po każdym pushu do `main`.
 2. Uruchom Msg4Honda i naciśnij START.
 3. Przy pierwszym uruchomieniu przyznaj dostęp do powiadomień.
 4. Wyślij testową wiadomość WhatsApp z innego telefonu.
-5. Sprawdź, czy radio pokazuje treść bez przerwania muzyki i czy po 4 sekundach
+5. Sprawdź, czy radio pokazuje treść i czy po 2,5 sekundy
    wracają metadane Spotify.
 
 Jeśli komunikat „Test połączenia” pojawia się po naciśnięciu START, ale
