@@ -62,7 +62,9 @@ object MapsNotificationParser {
         val maneuverText = values.firstOrNull { maneuverRegex.containsMatchIn(it) }
             ?: iconManeuver
         val distance = (maneuverText?.let { distanceRegex.find(it)?.value }
-            ?: values.firstNotNullOfOrNull { distanceRegex.find(it)?.value })
+            ?: values.firstNotNullOfOrNull { value ->
+                if (durationRegex.containsMatchIn(value)) null else distanceRegex.find(value)?.value
+            })
             ?.takeIf(::containsPositiveNumber)
         val inlineTarget = maneuverText
             ?.let { targetInInstructionRegex.find(it)?.groupValues?.getOrNull(1) }
