@@ -23,6 +23,8 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki
 - aktualizacje Map zawierające tylko malejącą odległość zachowują ostatni
   manewr i ulicę zamiast zastępować je samą liczbą metrów
+- bieżący manewr jest odczytywany również z niestandardowego widoku
+  powiadomienia Map, dzięki czemu zmiana kierunku zastępuje poprzednią
 - brak uprawnienia `INTERNET`
 - brak zapisywania treści wiadomości
 - bezgłośny strumień wymuszający wybór sesji przez radio, ale bez przejmowania

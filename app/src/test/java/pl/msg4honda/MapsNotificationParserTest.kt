@@ -86,4 +86,19 @@ class MapsNotificationParserTest {
 
         assertEquals(null, result)
     }
+
+    @Test
+    fun `custom notification text replaces the cached maneuver`() {
+        val previous = MapsNotificationParser.parse(
+            listOf("8 min", "Za 300 m skręć w prawo", "ul. Długa"),
+        )!!
+
+        val result = MapsNotificationParser.parse(
+            listOf("30 m • skręć w lewo", "ul. Polna", "7 min"),
+            previous,
+        )!!
+
+        assertEquals("<- Skręć w lewo - 30m", result.messageLine1)
+        assertEquals("ul. Polna", result.messageLine2)
+    }
 }
