@@ -33,9 +33,11 @@ object MapsNotificationParser {
         if (values.isEmpty()) return null
 
         val duration = values.firstNotNullOfOrNull { durationRegex.find(it)?.value }
+            ?.takeIf(::containsPositiveNumber)
         val maneuverText = values.firstOrNull { maneuverRegex.containsMatchIn(it) }
-        val distance = maneuverText?.let { distanceRegex.find(it)?.value }
-            ?: values.firstNotNullOfOrNull { distanceRegex.find(it)?.value }
+        val distance = (maneuverText?.let { distanceRegex.find(it)?.value }
+            ?: values.firstNotNullOfOrNull { distanceRegex.find(it)?.value })
+            ?.takeIf(::containsPositiveNumber)
         val inlineTarget = maneuverText
             ?.let { targetInInstructionRegex.find(it)?.groupValues?.getOrNull(1) }
         val separateTarget = values.firstOrNull {
@@ -53,18 +55,34 @@ object MapsNotificationParser {
             .replace(Regex("(?i)^za\\s+"), "")
             .replace(Regex("(?i)\\s+(?:w kierunku|na|w)\\s*$"), "")
             .replace(Regex("(?i)\\s+za\\s*$"), "")
+            .replace(Regex("(?i)\\s+przez\\s*$"), "")
             .trim(' ', '-', '•', ',', '.')
             .replaceFirstChar { it.titlecase() }
 
+        val arrow = when {
+            action.contains("w lewo", ignoreCase = true) -> "<-"
+            action.contains("w prawo", ignoreCase = true) -> "->"
+            action.contains("prosto", ignoreCase = true) -> "^"
+            else -> ""
+        }
+        val compactDistance = distance?.replace(" ", "")
+
         val instruction = listOfNotNull(
-            action.takeIf(String::isNotBlank),
-            distance,
-        ).joinToString(" - ").ifBlank { "Nawigacja" }
+            listOf(arrow, action).filter(String::isNotBlank).joinToString(" ")
+                .takeIf(String::isNotBlank),
+            compactDistance,
+        ).joinToString(" - ")
+
+        if (duration == null && instruction.isBlank() && target.isBlank()) return null
 
         return HondaDisplayText(
             title = duration?.let { "Maps $it" } ?: "Maps",
-            messageLine1 = instruction.take(LINE_LENGTH),
+            messageLine1 = instruction.ifBlank { "Nawigacja" }.take(LINE_LENGTH),
             messageLine2 = target.take(LINE_LENGTH),
         )
     }
+
+    private fun containsPositiveNumber(value: String): Boolean = Regex("\\d+")
+        .findAll(value)
+        .any { match -> match.value.toIntOrNull()?.let { it > 0 } == true }
 }

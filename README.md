@@ -13,10 +13,11 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - osobne przełączniki WhatsApp, Messenger, SMS/RCS i Google Maps
 - wiadomości są dzielone na dwuliniowe strony po 48 znaków
 - kolejne strony pojawiają się automatycznie co 2 sekundy
-- przyciski następny/poprzedni na radiu zmieniają stronę lub wiadomość
-- ręczna zmiana strony rozpoczyna od nowa automatyczne odliczanie
+- przyciski następny/poprzedni zamykają komunikat i przekazują zmianę utworu
+  z powrotem do Spotify
 - ostatnia strona znika po 5 sekundach, wszystkie strony są wtedy usuwane
-- wskazówki Map pokazują czas dojazdu, manewr z odległością i ulicę/kierunek;
+- wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
+  oraz ulicę/kierunek;
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki
 - brak uprawnienia `INTERNET`
 - brak zapisywania treści wiadomości

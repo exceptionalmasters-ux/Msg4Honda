@@ -3,6 +3,7 @@ package pl.msg4honda
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.view.KeyEvent
 
 object MessageDisplayCoordinator {
     private const val AUTO_ADVANCE_MS = 2_000L
@@ -82,31 +83,20 @@ object MessageDisplayCoordinator {
     private fun getSession(context: Context): HondaMediaSession =
         mediaSession ?: HondaMediaSession(
             context = context,
-            onNext = { moveNext() },
-            onPrevious = { movePrevious() },
+            onNext = { dismissAndForward(KeyEvent.KEYCODE_MEDIA_NEXT) },
+            onPrevious = { dismissAndForward(KeyEvent.KEYCODE_MEDIA_PREVIOUS) },
         ).also { mediaSession = it }
 
     @Synchronized
-    private fun moveNext() {
-        if (displayKind != DisplayKind.MESSAGES || pages.isEmpty()) return
+    private fun dismissAndForward(keyCode: Int) {
+        if (displayKind == null) return
 
-        if (currentPage == pages.lastIndex) {
-            expireMessages()
-            return
-        }
-
-        currentPage += 1
-        mediaSession?.showMessage(pages[currentPage])
-        scheduleMessageAction()
-    }
-
-    @Synchronized
-    private fun movePrevious() {
-        if (displayKind != DisplayKind.MESSAGES || pages.isEmpty()) return
-
-        if (currentPage > 0) currentPage -= 1
-        mediaSession?.showMessage(pages[currentPage])
-        scheduleMessageAction()
+        cancelPendingAction()
+        pages.clear()
+        currentPage = 0
+        displayKind = null
+        mediaSession?.hide()
+        mediaSession?.forwardMediaKey(keyCode)
     }
 
     @Synchronized

@@ -3,18 +3,22 @@ package pl.msg4honda
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioTrack
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.os.Handler
 import android.os.Looper
+import android.view.KeyEvent
 
 class HondaMediaSession(
     context: Context,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
 ) {
+    private val audioManager = context.getSystemService(AudioManager::class.java)
+    private val mainHandler = Handler(Looper.getMainLooper())
     private val audioAttributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_MEDIA)
         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -33,7 +37,7 @@ class HondaMediaSession(
 
                 override fun onSkipToPrevious() = onPrevious()
             },
-            Handler(Looper.getMainLooper()),
+            mainHandler,
         )
     }
 
@@ -44,8 +48,16 @@ class HondaMediaSession(
         session.setMetadata(
             MediaMetadata.Builder()
                 .putString(MediaMetadata.METADATA_KEY_TITLE, displayText.title)
-                .putString(MediaMetadata.METADATA_KEY_ARTIST, displayText.messageLine1)
-                .putString(MediaMetadata.METADATA_KEY_ALBUM, displayText.messageLine2)
+                // The Civic IX displays album above artist, so these two fields
+                // are intentionally opposite to their visual line numbers.
+                .putString(
+                    MediaMetadata.METADATA_KEY_ALBUM,
+                    displayText.messageLine1.ifBlank { "-" },
+                )
+                .putString(
+                    MediaMetadata.METADATA_KEY_ARTIST,
+                    displayText.messageLine2.ifBlank { "-" },
+                )
                 .build(),
         )
         session.setPlaybackState(
@@ -74,6 +86,13 @@ class HondaMediaSession(
     fun release() {
         stopSilentPlayback()
         session.release()
+    }
+
+    fun forwardMediaKey(keyCode: Int) {
+        mainHandler.postDelayed({
+            audioManager.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, keyCode))
+            audioManager.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, keyCode))
+        }, 150L)
     }
 
     private fun startSilentPlayback() {
