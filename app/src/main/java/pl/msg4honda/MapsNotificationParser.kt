@@ -8,7 +8,7 @@ object MapsNotificationParser {
         RegexOption.IGNORE_CASE,
     )
     private val distanceRegex = Regex(
-        "\\d+(?:[,.]\\d+)?\\s*(?:m|km)",
+        "\\d+(?:[,.]\\d+)?\\s*(?:km|m)(?![\\p{L}])",
         RegexOption.IGNORE_CASE,
     )
     private val maneuverRegex = Regex(
