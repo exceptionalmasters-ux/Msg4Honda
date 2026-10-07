@@ -23,6 +23,8 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - przycisk `DANE MAPS` pokazuje pełny diagnostyczny zrzut ostatniego
   powiadomienia Map (klucze, wartości, teksty i identyfikatory obrazów);
   dane diagnostyczne nie są wysyłane do radia
+- diagnostyka dołącza obraz PNG/Base64 pola `right_icon`, aby można było
+  rozpoznać kształt strzałki niezależnie od zmiennego skrótu obrazu
 - wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
   oraz ulicę/kierunek;
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki

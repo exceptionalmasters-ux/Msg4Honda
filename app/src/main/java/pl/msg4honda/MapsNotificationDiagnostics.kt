@@ -8,6 +8,7 @@ import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Bundle
 import android.service.notification.StatusBarNotification
+import android.util.Base64
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -91,7 +92,15 @@ object MapsNotificationDiagnostics {
             output.appendLine("-- $name layoutId=${remoteViews.layoutId} --")
             runCatching {
                 remoteViews.apply(sourceContext, FrameLayout(sourceContext))
-            }.onSuccess { root -> appendViewTree(sourceContext, root, output, 0) }
+            }.onSuccess { root ->
+                appendViewTree(
+                    context = sourceContext,
+                    view = root,
+                    output = output,
+                    depth = 0,
+                    includeRightIconPng = name == "recoveredBigContentView",
+                )
+            }
                 .onFailure {
                     output.appendLine("apply ERROR: ${it.javaClass.simpleName}: ${it.message}")
                 }
@@ -103,6 +112,7 @@ object MapsNotificationDiagnostics {
         view: View,
         output: StringBuilder,
         depth: Int,
+        includeRightIconPng: Boolean,
     ) {
         if (output.length >= MAX_DUMP_LENGTH) return
 
@@ -118,23 +128,40 @@ object MapsNotificationDiagnostics {
                 "$prefix TextView $idName text=${view.text.toString().take(MAX_VALUE_LENGTH)}",
             )
             is ImageView -> output.appendLine(
-                "$prefix ImageView $idName drawable=${formatDrawable(view)}",
+                "$prefix ImageView $idName drawable=${formatDrawable(
+                    view,
+                    includePng = includeRightIconPng && idName == "right_icon",
+                )}",
             )
         }
 
         if (view is ViewGroup) {
             for (index in 0 until view.childCount) {
-                appendViewTree(context, view.getChildAt(index), output, depth + 1)
+                appendViewTree(
+                    context,
+                    view.getChildAt(index),
+                    output,
+                    depth + 1,
+                    includeRightIconPng,
+                )
             }
         }
     }
 
-    private fun formatDrawable(view: ImageView): String {
+    private fun formatDrawable(view: ImageView, includePng: Boolean): String {
         val drawable = view.drawable ?: return "null"
         val bitmap = (drawable as? BitmapDrawable)?.bitmap
         val bitmapPart = bitmap?.let(::formatBitmap) ?: "bez bitmapy"
+        val pngPart = if (bitmap != null && includePng) {
+            val encoded = runCatching {
+                Base64.encodeToString(bitmapPng(bitmap), Base64.NO_WRAP)
+            }.getOrElse { "error-${it.javaClass.simpleName}" }
+            ", pngBase64=$encoded"
+        } else {
+            ""
+        }
         return "${drawable.javaClass.simpleName}, " +
-            "intrinsic=${drawable.intrinsicWidth}x${drawable.intrinsicHeight}, $bitmapPart"
+            "intrinsic=${drawable.intrinsicWidth}x${drawable.intrinsicHeight}, $bitmapPart$pngPart"
     }
 
     private fun formatValue(value: Any?): String {
@@ -175,15 +202,16 @@ object MapsNotificationDiagnostics {
 
     private fun formatBitmap(bitmap: Bitmap): String {
         val fingerprint = runCatching {
-            val bytes = ByteArrayOutputStream().use { stream ->
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-                stream.toByteArray()
-            }
             MessageDigest.getInstance("SHA-256")
-                .digest(bytes)
+                .digest(bitmapPng(bitmap))
                 .take(6)
                 .joinToString("") { "%02x".format(it) }
         }.getOrElse { "error-${it.javaClass.simpleName}" }
         return "Bitmap(${bitmap.width}x${bitmap.height}, hash=$fingerprint)"
+    }
+
+    private fun bitmapPng(bitmap: Bitmap): ByteArray = ByteArrayOutputStream().use { stream ->
+        check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream))
+        stream.toByteArray()
     }
 }
