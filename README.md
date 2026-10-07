@@ -13,8 +13,10 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - osobne przełączniki WhatsApp, Messenger, SMS/RCS i Google Maps
 - wiadomości są dzielone na dwuliniowe strony po 48 znaków
 - kolejne strony pojawiają się automatycznie co 2 sekundy
-- przyciski następny/poprzedni zamykają komunikat i przekazują zmianę utworu
+- przyciski następny/poprzedni przewijają strony wiadomości z komunikatorów
+- przy wskazówce Google Maps przycisk zamyka ją i przekazuje zmianę utworu
   z powrotem do Spotify
+- obsługiwane są zarówno komendy AVRCP, jak i surowe zdarzenia przycisków
 - ostatnia strona znika po 5 sekundach, wszystkie strony są wtedy usuwane
 - wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
   oraz ulicę/kierunek;

@@ -83,17 +83,56 @@ object MessageDisplayCoordinator {
     private fun getSession(context: Context): HondaMediaSession =
         mediaSession ?: HondaMediaSession(
             context = context,
-            onNext = { dismissAndForward(KeyEvent.KEYCODE_MEDIA_NEXT) },
-            onPrevious = { dismissAndForward(KeyEvent.KEYCODE_MEDIA_PREVIOUS) },
+            onNext = { handleNext() },
+            onPrevious = { handlePrevious() },
         ).also { mediaSession = it }
 
     @Synchronized
-    private fun dismissAndForward(keyCode: Int) {
-        if (displayKind == null) return
+    private fun handleNext() {
+        when (displayKind) {
+            DisplayKind.MESSAGES -> moveNext()
+            DisplayKind.NAVIGATION -> dismissNavigationAndForward(KeyEvent.KEYCODE_MEDIA_NEXT)
+            null -> Unit
+        }
+    }
+
+    @Synchronized
+    private fun handlePrevious() {
+        when (displayKind) {
+            DisplayKind.MESSAGES -> movePrevious()
+            DisplayKind.NAVIGATION -> dismissNavigationAndForward(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            null -> Unit
+        }
+    }
+
+    @Synchronized
+    private fun moveNext() {
+        if (pages.isEmpty()) return
+
+        if (currentPage == pages.lastIndex) {
+            expireMessages()
+            return
+        }
+
+        currentPage += 1
+        mediaSession?.showMessage(pages[currentPage])
+        scheduleMessageAction()
+    }
+
+    @Synchronized
+    private fun movePrevious() {
+        if (pages.isEmpty()) return
+
+        if (currentPage > 0) currentPage -= 1
+        mediaSession?.showMessage(pages[currentPage])
+        scheduleMessageAction()
+    }
+
+    @Synchronized
+    private fun dismissNavigationAndForward(keyCode: Int) {
+        if (displayKind != DisplayKind.NAVIGATION) return
 
         cancelPendingAction()
-        pages.clear()
-        currentPage = 0
         displayKind = null
         mediaSession?.hide()
         mediaSession?.forwardMediaKey(keyCode)

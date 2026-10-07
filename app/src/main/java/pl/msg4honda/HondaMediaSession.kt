@@ -1,6 +1,7 @@
 package pl.msg4honda
 
 import android.content.Context
+import android.content.Intent
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioManager
@@ -33,6 +34,21 @@ class HondaMediaSession(
         setPlaybackToLocal(audioAttributes)
         setCallback(
             object : MediaSession.Callback() {
+                override fun onMediaButtonEvent(mediaButtonIntent: Intent): Boolean {
+                    @Suppress("DEPRECATION")
+                    val event = mediaButtonIntent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+                        ?: return super.onMediaButtonEvent(mediaButtonIntent)
+
+                    if (event.action == KeyEvent.ACTION_DOWN) {
+                        when (event.keyCode) {
+                            KeyEvent.KEYCODE_MEDIA_NEXT -> onNext()
+                            KeyEvent.KEYCODE_MEDIA_PREVIOUS -> onPrevious()
+                            else -> return super.onMediaButtonEvent(mediaButtonIntent)
+                        }
+                    }
+                    return true
+                }
+
                 override fun onSkipToNext() = onNext()
 
                 override fun onSkipToPrevious() = onPrevious()
