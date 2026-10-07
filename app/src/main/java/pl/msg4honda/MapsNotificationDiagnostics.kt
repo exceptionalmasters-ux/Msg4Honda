@@ -243,6 +243,8 @@ object MapsNotificationDiagnostics {
         "17db2c2d28b7" -> "Skręć w prawo"
         "e8279e455a98" -> "Skręć w lewo"
         "f21e2536ff8f" -> "Jedź prosto"
+        "6f20e21aca00" -> "Lekko w prawo"
+        "9b5b78d96b7f" -> "Zawróć"
         else -> null
     }
 
