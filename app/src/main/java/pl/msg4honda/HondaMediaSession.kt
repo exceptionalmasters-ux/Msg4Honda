@@ -1,5 +1,6 @@
 package pl.msg4honda
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
@@ -8,6 +9,7 @@ import android.media.AudioManager
 import android.media.AudioTrack
 import android.media.MediaMetadata
 import android.media.session.MediaSession
+import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
 import android.os.Handler
 import android.os.Looper
@@ -21,9 +23,12 @@ class HondaMediaSession(
     companion object {
         private const val CLEAR_METADATA_GRACE_MS = 750L
         private const val EMPTY_RADIO_FIELD = " "
+        private const val SPOTIFY_PACKAGE = "com.spotify.music"
     }
 
+    private val applicationContext = context.applicationContext
     private val audioManager = context.getSystemService(AudioManager::class.java)
+    private val mediaSessionManager = context.getSystemService(MediaSessionManager::class.java)
     private val mainHandler = Handler(Looper.getMainLooper())
     private val audioAttributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -97,23 +102,20 @@ class HondaMediaSession(
 
     fun hide() {
         val hideGeneration = ++stateGeneration
-        // When no other player is active, many car radios keep the last AVRCP
-        // metadata even after a MediaSession is deactivated. Publish empty
-        // fields first and leave the session active briefly so the radio has a
-        // chance to receive the clearing update.
-        session.setMetadata(
-            MediaMetadata.Builder()
-                .putString(MediaMetadata.METADATA_KEY_TITLE, EMPTY_RADIO_FIELD)
-                .putString(MediaMetadata.METADATA_KEY_ALBUM, EMPTY_RADIO_FIELD)
-                .putString(MediaMetadata.METADATA_KEY_ARTIST, EMPTY_RADIO_FIELD)
-                .build(),
-        )
-        session.setPlaybackState(
-            PlaybackState.Builder()
-                .setState(PlaybackState.STATE_STOPPED, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 0f)
-                .setActions(0L)
-                .build(),
-        )
+        val spotifySnapshot = spotifySnapshot()
+
+        if (spotifySnapshot != null) {
+            // Deactivation alone does not make Spotify resend its current
+            // metadata. Mirror it once through the session already selected by
+            // the car, then deactivate Msg4Honda without releasing its token.
+            session.setMetadata(spotifySnapshot.metadata)
+            session.setPlaybackState(spotifySnapshot.playbackState)
+        } else {
+            // When no Spotify session is available, clear the stale message so
+            // it does not remain on the radio indefinitely.
+            session.setMetadata(emptyMetadata())
+            session.setPlaybackState(stoppedPlaybackState())
+        }
         stopSilentPlayback()
         mainHandler.postDelayed({
             if (stateGeneration == hideGeneration) {
@@ -169,4 +171,59 @@ class HondaMediaSession(
         }
         silentTrack = null
     }
+
+    private fun spotifySnapshot(): SpotifySnapshot? = runCatching {
+        val listener = ComponentName(applicationContext, MessageNotificationListener::class.java)
+        val controller = mediaSessionManager.getActiveSessions(listener)
+            .firstOrNull { it.packageName == SPOTIFY_PACKAGE }
+            ?: return@runCatching null
+        val source = controller.metadata ?: return@runCatching null
+        val title = source.getString(MediaMetadata.METADATA_KEY_TITLE)
+            ?.takeIf(String::isNotBlank)
+            ?: source.description.title?.toString()?.takeIf(String::isNotBlank)
+            ?: return@runCatching null
+        val artist = source.getString(MediaMetadata.METADATA_KEY_ARTIST)
+            ?.takeIf(String::isNotBlank)
+            ?: source.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST)
+                ?.takeIf(String::isNotBlank)
+            ?: source.description.subtitle?.toString()?.takeIf(String::isNotBlank)
+            ?: EMPTY_RADIO_FIELD
+        val album = source.getString(MediaMetadata.METADATA_KEY_ALBUM)
+            ?.takeIf(String::isNotBlank)
+            ?: source.description.description?.toString()?.takeIf(String::isNotBlank)
+            ?: EMPTY_RADIO_FIELD
+        val spotifyState = controller.playbackState
+
+        SpotifySnapshot(
+            metadata = MediaMetadata.Builder()
+                .putString(MediaMetadata.METADATA_KEY_TITLE, title)
+                .putString(MediaMetadata.METADATA_KEY_ALBUM, album)
+                .putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
+                .build(),
+            playbackState = PlaybackState.Builder()
+                .setState(
+                    spotifyState?.state ?: PlaybackState.STATE_PLAYING,
+                    spotifyState?.position ?: PlaybackState.PLAYBACK_POSITION_UNKNOWN,
+                    spotifyState?.playbackSpeed ?: 1f,
+                )
+                .setActions(0L)
+                .build(),
+        )
+    }.getOrNull()
+
+    private fun emptyMetadata(): MediaMetadata = MediaMetadata.Builder()
+        .putString(MediaMetadata.METADATA_KEY_TITLE, EMPTY_RADIO_FIELD)
+        .putString(MediaMetadata.METADATA_KEY_ALBUM, EMPTY_RADIO_FIELD)
+        .putString(MediaMetadata.METADATA_KEY_ARTIST, EMPTY_RADIO_FIELD)
+        .build()
+
+    private fun stoppedPlaybackState(): PlaybackState = PlaybackState.Builder()
+        .setState(PlaybackState.STATE_STOPPED, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 0f)
+        .setActions(0L)
+        .build()
+
+    private data class SpotifySnapshot(
+        val metadata: MediaMetadata,
+        val playbackState: PlaybackState,
+    )
 }

@@ -16,13 +16,13 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - przyciski następny/poprzedni przewijają strony wiadomości z komunikatorów
 - przy wskazówce Google Maps przycisk zamyka ją i przekazuje zmianę utworu
   z powrotem do Spotify
-- po wygaszeniu komunikatu sesja Msg4Honda jest czyszczona i dezaktywowana,
-  ale zachowuje ten sam identyfikator wymagany przez radio dla kolejnych
-  powiadomień; aktywna sesja Spotify może ponownie pokazać dane utworu
+- po wygaszeniu komunikatu sesja Msg4Honda kopiuje bieżący tytuł, album i
+  wykonawcę z aktywnej sesji Spotify, a następnie jest dezaktywowana bez
+  zwalniania identyfikatora wymaganego przez radio dla kolejnych powiadomień
 - obsługiwane są zarówno komendy AVRCP, jak i surowe zdarzenia przycisków
 - ostatnia strona znika po 5 sekundach, wszystkie strony są wtedy usuwane
-- po wygaszeniu aplikacja wysyła puste metadane, aby komunikat zniknął także
-  wtedy, gdy żaden odtwarzacz muzyki nie przejmuje ekranu radia
+- jeśli Spotify nie udostępnia aktywnej sesji, po wygaszeniu aplikacja wysyła
+  puste metadane, aby komunikat nie pozostał na ekranie radia
 - przycisk `DANE MAPS` pokazuje pełny diagnostyczny zrzut ostatniego
   powiadomienia Map (klucze, wartości, teksty i identyfikatory obrazów);
   dane diagnostyczne nie są wysyłane do radia
