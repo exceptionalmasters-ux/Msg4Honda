@@ -245,6 +245,7 @@ object MapsNotificationDiagnostics {
         "f21e2536ff8f" -> "Jedź prosto"
         "6f20e21aca00" -> "Lekko w prawo"
         "9b5b78d96b7f" -> "Zawróć"
+        "6e73aba63816" -> "Lekko w lewo"
         else -> null
     }
 
