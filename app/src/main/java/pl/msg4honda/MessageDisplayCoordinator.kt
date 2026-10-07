@@ -9,6 +9,7 @@ object MessageDisplayCoordinator {
     private const val AUTO_ADVANCE_MS = 2_000L
     private const val LAST_PAGE_TIME_MS = 5_000L
     private const val NAVIGATION_TIME_MS = 5_000L
+    private const val SESSION_RELEASE_DELAY_MS = 1_000L
     private const val MAX_RECENT_KEYS = 100
 
     private enum class DisplayKind { MESSAGES, NAVIGATION }
@@ -20,6 +21,7 @@ object MessageDisplayCoordinator {
     private var mediaSession: HondaMediaSession? = null
     private var displayKind: DisplayKind? = null
     private var pendingAction: Runnable? = null
+    private var pendingSessionRelease: Runnable? = null
 
     @Synchronized
     fun enqueue(
@@ -48,6 +50,7 @@ object MessageDisplayCoordinator {
     @Synchronized
     fun stop(context: Context) {
         cancelPendingAction()
+        cancelPendingSessionRelease()
         pages.clear()
         currentPage = 0
         displayKind = null
@@ -81,7 +84,7 @@ object MessageDisplayCoordinator {
     }
 
     private fun getSession(context: Context): HondaMediaSession =
-        mediaSession ?: HondaMediaSession(
+        mediaSession.also { cancelPendingSessionRelease() } ?: HondaMediaSession(
             context = context,
             onNext = { handleNext() },
             onPrevious = { handlePrevious() },
@@ -136,6 +139,7 @@ object MessageDisplayCoordinator {
         displayKind = null
         mediaSession?.hide()
         mediaSession?.forwardMediaKey(keyCode)
+        scheduleSessionRelease()
     }
 
     @Synchronized
@@ -167,6 +171,7 @@ object MessageDisplayCoordinator {
         currentPage = 0
         displayKind = null
         mediaSession?.hide()
+        scheduleSessionRelease()
     }
 
     @Synchronized
@@ -175,11 +180,35 @@ object MessageDisplayCoordinator {
         if (displayKind == DisplayKind.NAVIGATION) {
             displayKind = null
             mediaSession?.hide()
+            scheduleSessionRelease()
         }
+    }
+
+    @Synchronized
+    private fun scheduleSessionRelease() {
+        cancelPendingSessionRelease()
+        val sessionToRelease = mediaSession ?: return
+        pendingSessionRelease = Runnable {
+            releaseSessionIfIdle(sessionToRelease)
+        }.also { handler.postDelayed(it, SESSION_RELEASE_DELAY_MS) }
+    }
+
+    @Synchronized
+    private fun releaseSessionIfIdle(sessionToRelease: HondaMediaSession) {
+        pendingSessionRelease = null
+        if (mediaSession !== sessionToRelease || displayKind != null || pages.isNotEmpty()) return
+
+        sessionToRelease.release()
+        mediaSession = null
     }
 
     private fun cancelPendingAction() {
         pendingAction?.let(handler::removeCallbacks)
         pendingAction = null
+    }
+
+    private fun cancelPendingSessionRelease() {
+        pendingSessionRelease?.let(handler::removeCallbacks)
+        pendingSessionRelease = null
     }
 }

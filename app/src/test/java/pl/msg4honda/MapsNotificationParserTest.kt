@@ -10,7 +10,7 @@ class MapsNotificationParserTest {
             listOf("18 min", "Za 300 m skręć w prawo w ul. Krakowska"),
         )!!
 
-        assertEquals("Maps 18 min", result.title)
+        assertEquals("Maps - 18 min", result.title)
         assertEquals("-> Skręć w prawo - 300m", result.messageLine1)
         assertEquals("ul. Krakowska", result.messageLine2)
     }
@@ -21,7 +21,7 @@ class MapsNotificationParserTest {
             listOf("1 h 5 min", "Zjedź za 2 km w kierunku A4 Rzeszów"),
         )!!
 
-        assertEquals("Maps 1 h 5 min", result.title)
+        assertEquals("Maps - 1 h 5 min", result.title)
         assertEquals("Zjedź - 2km", result.messageLine1)
         assertEquals("A4 Rzeszów", result.messageLine2)
     }
@@ -54,7 +54,7 @@ class MapsNotificationParserTest {
 
         val result = MapsNotificationParser.parse(listOf("7 min", "30 m"), previous)!!
 
-        assertEquals("Maps 7 min", result.title)
+        assertEquals("Maps - 7 min", result.title)
         assertEquals("-> Skręć w prawo - 30m", result.messageLine1)
         assertEquals("ul. Długa", result.messageLine2)
     }
@@ -94,8 +94,24 @@ class MapsNotificationParserTest {
             iconManeuver = "Skręć w prawo",
         )!!
 
-        assertEquals("Maps 12 min", result.title)
+        assertEquals("Maps - 12 min", result.title)
         assertEquals("-> Skręć w prawo - 10m", result.messageLine1)
         assertEquals("Cechowa", result.messageLine2)
+    }
+
+    @Test
+    fun `shows remaining route distance and time in title`() {
+        val result = MapsNotificationParser.parse(
+            listOf(
+                "10 min · 3,1 km · Będziesz o 21:30",
+                "300 m",
+                "Zakopiańska",
+            ),
+            iconManeuver = "Jedź prosto",
+        )!!
+
+        assertEquals("Maps - 3.1km - 10 min", result.title)
+        assertEquals("^ Jedź prosto - 300m", result.messageLine1)
+        assertEquals("Zakopiańska", result.messageLine2)
     }
 }

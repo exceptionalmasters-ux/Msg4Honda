@@ -16,6 +16,8 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - przyciski następny/poprzedni przewijają strony wiadomości z komunikatorów
 - przy wskazówce Google Maps przycisk zamyka ją i przekazuje zmianę utworu
   z powrotem do Spotify
+- po wygaszeniu komunikatu sesja Msg4Honda jest zwalniana, aby radio ponownie
+  wybrało Spotify i pokazało metadane utworu
 - obsługiwane są zarówno komendy AVRCP, jak i surowe zdarzenia przycisków
 - ostatnia strona znika po 5 sekundach, wszystkie strony są wtedy usuwane
 - po wygaszeniu aplikacja wysyła puste metadane, aby komunikat zniknął także
@@ -31,6 +33,8 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
   oraz ulicę/kierunek;
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki
+- pierwszy wiersz Map zawiera dystans całej trasy i czas, np.
+  `Maps - 3.1km - 10 min`
 - aktualizacje Map zawierające tylko malejącą odległość zachowują ostatni
   manewr i ulicę zamiast zastępować je samą liczbą metrów
 - brak uprawnienia `INTERNET`

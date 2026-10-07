@@ -56,6 +56,9 @@ object MapsNotificationParser {
 
         val duration = values.firstNotNullOfOrNull { durationRegex.find(it)?.value }
             ?.takeIf(::containsPositiveNumber)
+        val remainingDistance = values.firstNotNullOfOrNull { value ->
+            if (durationRegex.containsMatchIn(value)) distanceRegex.find(value)?.value else null
+        }?.takeIf(::containsPositiveNumber)
         val maneuverText = values.firstOrNull { maneuverRegex.containsMatchIn(it) }
             ?: iconManeuver
         val distance = (maneuverText?.let { distanceRegex.find(it)?.value }
@@ -90,7 +93,15 @@ object MapsNotificationParser {
 
         if (action.isBlank() && newTarget.isBlank() && previous == null) return null
 
-        val title = duration?.let { "Maps $it" } ?: previous?.title ?: "Maps"
+        val title = if (duration != null) {
+            listOfNotNull(
+                "Maps",
+                remainingDistance?.replace(" ", "")?.replace(',', '.'),
+                duration,
+            ).joinToString(" - ").take(LINE_LENGTH)
+        } else {
+            previous?.title ?: "Maps"
+        }
         val target = newTarget.ifBlank { previous?.messageLine2.orEmpty() }
         val instruction = if (action.isNotBlank()) {
             formatInstruction(withArrow(action), distance)
