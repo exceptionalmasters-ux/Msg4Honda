@@ -20,6 +20,9 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - ostatnia strona znika po 5 sekundach, wszystkie strony są wtedy usuwane
 - po wygaszeniu aplikacja wysyła puste metadane, aby komunikat zniknął także
   wtedy, gdy żaden odtwarzacz muzyki nie przejmuje ekranu radia
+- przycisk `DANE MAPS` pokazuje pełny diagnostyczny zrzut ostatniego
+  powiadomienia Map (klucze, wartości, teksty i identyfikatory obrazów);
+  dane diagnostyczne nie są wysyłane do radia
 - wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
   oraz ulicę/kierunek;
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki

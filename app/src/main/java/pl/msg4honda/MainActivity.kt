@@ -1,7 +1,10 @@
 package pl.msg4honda
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.NotificationManager
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
@@ -9,6 +12,7 @@ import android.provider.Settings
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.ScrollView
 import android.widget.TextView
 
 class MainActivity : Activity() {
@@ -19,6 +23,7 @@ class MainActivity : Activity() {
     private lateinit var messengerToggle: CheckBox
     private lateinit var smsToggle: CheckBox
     private lateinit var mapsToggle: CheckBox
+    private lateinit var mapsDebugButton: Button
     private var waitingForPermission = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +37,7 @@ class MainActivity : Activity() {
         messengerToggle = findViewById(R.id.messengerToggle)
         smsToggle = findViewById(R.id.smsToggle)
         mapsToggle = findViewById(R.id.mapsToggle)
+        mapsDebugButton = findViewById(R.id.mapsDebugButton)
 
         bindSourceToggle(whatsAppToggle, MessageSource.WHATSAPP)
         bindSourceToggle(messengerToggle, MessageSource.MESSENGER)
@@ -50,6 +56,7 @@ class MainActivity : Activity() {
                 startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
             }
         }
+        mapsDebugButton.setOnClickListener { showMapsDebug() }
     }
 
     override fun onResume() {
@@ -101,5 +108,27 @@ class MainActivity : Activity() {
         toggle.setOnCheckedChangeListener { _, enabled ->
             AppState.setSourceEnabled(this, source, enabled)
         }
+    }
+
+    private fun showMapsDebug() {
+        val debugText = AppState.mapsDebug(this)
+            .ifBlank { getString(R.string.maps_debug_empty) }
+        val textView = TextView(this).apply {
+            text = debugText
+            setTextIsSelectable(true)
+            setPadding(32, 16, 32, 16)
+            textSize = 12f
+        }
+        val scrollView = ScrollView(this).apply { addView(textView) }
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.maps_debug_title)
+            .setView(scrollView)
+            .setNeutralButton(R.string.copy) { _, _ ->
+                getSystemService(ClipboardManager::class.java)
+                    .setPrimaryClip(ClipData.newPlainText("Dane Maps", debugText))
+            }
+            .setPositiveButton(R.string.close, null)
+            .show()
     }
 }

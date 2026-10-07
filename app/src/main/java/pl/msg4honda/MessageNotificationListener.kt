@@ -49,6 +49,7 @@ class MessageNotificationListener : NotificationListenerService() {
     }
 
     private fun handleMapsNotification(sbn: StatusBarNotification) {
+        AppState.setMapsDebug(this, MapsNotificationDiagnostics.create(this, sbn))
         val extras = sbn.notification.extras
         val values = buildList {
             addAll(listOfNotNull(

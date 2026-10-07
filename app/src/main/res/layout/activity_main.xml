@@ -129,6 +129,14 @@
         android:textSize="22sp"
         android:textStyle="bold" />
 
+    <Button
+        android:id="@+id/mapsDebugButton"
+        android:layout_width="220dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/show_maps_debug"
+        android:textSize="14sp" />
+
     <TextView
         android:id="@+id/permissionHint"
         android:layout_width="match_parent"

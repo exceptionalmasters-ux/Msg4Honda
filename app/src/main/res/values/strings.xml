@@ -13,4 +13,9 @@
     <string name="maps">Google Maps</string>
     <string name="privacy_hint">Tylko wybrane źródła • bez internetu • wiadomości nie są zapisywane</string>
     <string name="test_sent">wysłano test do radia</string>
+    <string name="show_maps_debug">DANE MAPS</string>
+    <string name="maps_debug_title">Pełne dane powiadomienia Maps</string>
+    <string name="maps_debug_empty">Brak danych. Włącz nawigację i poczekaj na wskazówkę.</string>
+    <string name="copy">KOPIUJ</string>
+    <string name="close">ZAMKNIJ</string>
 </resources>
