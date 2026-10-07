@@ -21,6 +21,8 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
   oraz ulicę/kierunek;
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki
+- aktualizacje Map zawierające tylko malejącą odległość zachowują ostatni
+  manewr i ulicę zamiast zastępować je samą liczbą metrów
 - brak uprawnienia `INTERNET`
 - brak zapisywania treści wiadomości
 - bezgłośny strumień wymuszający wybór sesji przez radio, ale bez przejmowania

@@ -45,4 +45,45 @@ class MapsNotificationParserTest {
 
         assertEquals(null, result)
     }
+
+    @Test
+    fun `distance-only update keeps previous maneuver and street`() {
+        val previous = MapsNotificationParser.parse(
+            listOf("8 min", "Za 300 m skręć w prawo w ul. Długa"),
+        )!!
+
+        val result = MapsNotificationParser.parse(listOf("7 min", "30 m"), previous)!!
+
+        assertEquals("Maps 7 min", result.title)
+        assertEquals("-> Skręć w prawo - 30m", result.messageLine1)
+        assertEquals("ul. Długa", result.messageLine2)
+    }
+
+    @Test
+    fun `finds street without a road prefix in extra text line`() {
+        val result = MapsNotificationParser.parse(
+            listOf("8 min", "Skręć w lewo", "30 m", "Jana Pawła II"),
+        )!!
+
+        assertEquals("<- Skręć w lewo - 30m", result.messageLine1)
+        assertEquals("Jana Pawła II", result.messageLine2)
+    }
+
+    @Test
+    fun `does not display distance without known maneuver`() {
+        val result = MapsNotificationParser.parse(listOf("8 min", "30 m"))
+
+        assertEquals(null, result)
+    }
+
+    @Test
+    fun `terminal update clears previous maneuver`() {
+        val previous = MapsNotificationParser.parse(
+            listOf("8 min", "Za 300 m skręć w prawo w ul. Długa"),
+        )!!
+
+        val result = MapsNotificationParser.parse(listOf("0 min", "0 m"), previous)
+
+        assertEquals(null, result)
+    }
 }

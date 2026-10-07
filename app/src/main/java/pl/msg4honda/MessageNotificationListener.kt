@@ -5,6 +5,8 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 
 class MessageNotificationListener : NotificationListenerService() {
+    private var lastNavigation: HondaDisplayText? = null
+
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (!AppState.isEnabled(this)) return
 
@@ -48,7 +50,8 @@ class MessageNotificationListener : NotificationListenerService() {
 
     private fun handleMapsNotification(sbn: StatusBarNotification) {
         val extras = sbn.notification.extras
-        val values = listOfNotNull(
+        val values = buildList {
+            addAll(listOfNotNull(
             extras.getCharSequence(Notification.EXTRA_TITLE),
             extras.getCharSequence(Notification.EXTRA_TEXT),
             extras.getCharSequence(Notification.EXTRA_BIG_TEXT),
@@ -56,10 +59,25 @@ class MessageNotificationListener : NotificationListenerService() {
             extras.getCharSequence(Notification.EXTRA_INFO_TEXT),
             extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT),
             sbn.notification.tickerText,
-        ).map(CharSequence::toString)
+            ).map(CharSequence::toString))
+            extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)
+                ?.mapTo(this, CharSequence::toString)
 
-        val navigation = MapsNotificationParser.parse(values) ?: return
-        AppState.setLastEvent(this, "Maps: ${values.joinToString(" | ").take(120)}")
+            extras.keySet().forEach { key ->
+                when (val value = extras.get(key)) {
+                    is CharSequence -> add(value.toString())
+                    is Array<*> -> value.filterIsInstance<CharSequence>()
+                        .mapTo(this, CharSequence::toString)
+                    is Collection<*> -> value.filterIsInstance<CharSequence>()
+                        .mapTo(this, CharSequence::toString)
+                }
+            }
+        }.map(String::trim).filter(String::isNotBlank).distinct()
+
+        AppState.setLastEvent(this, "Maps: ${values.joinToString(" | ").take(180)}")
+        val navigation = MapsNotificationParser.parse(values, lastNavigation).also {
+            lastNavigation = it
+        } ?: return
         MessageDisplayCoordinator.showNavigation(this, navigation)
     }
 }

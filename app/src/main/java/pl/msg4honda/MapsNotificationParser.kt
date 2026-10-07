@@ -23,14 +23,35 @@ object MapsNotificationParser {
         "(?:w kierunku|na|w)\\s+((?:ul\\.|al\\.|alej[aęy]?|A\\d+|S\\d+|DK\\d+|DW\\d+).*)$",
         RegexOption.IGNORE_CASE,
     )
+    private val genericMapTextRegex = Regex(
+        "^(?:google )?maps$|bez tytułu|nawigacja|prowadzenie do celu|trasa",
+        RegexOption.IGNORE_CASE,
+    )
+    private val technicalTextRegex = Regex(
+        "android\\.|notification\\$|com\\.google",
+        RegexOption.IGNORE_CASE,
+    )
+    private val oldDistanceSuffixRegex = Regex(
+        "\\s+-\\s+\\d+(?:[,.]\\d+)?(?:m|km)$",
+        RegexOption.IGNORE_CASE,
+    )
 
-    fun parse(rawValues: List<String>): HondaDisplayText? {
+    fun parse(
+        rawValues: List<String>,
+        previous: HondaDisplayText? = null,
+    ): HondaDisplayText? {
         val values = rawValues
             .flatMap { it.lines() }
             .map { it.trim().replace(Regex("\\s+"), " ") }
             .filter(String::isNotBlank)
             .distinct()
         if (values.isEmpty()) return null
+
+        val isTerminalUpdate = values.any {
+            durationRegex.find(it)?.value?.let(::containsPositiveNumber) == false ||
+                distanceRegex.find(it)?.value?.let(::containsPositiveNumber) == false
+        }
+        if (isTerminalUpdate) return null
 
         val duration = values.firstNotNullOfOrNull { durationRegex.find(it)?.value }
             ?.takeIf(::containsPositiveNumber)
@@ -40,17 +61,23 @@ object MapsNotificationParser {
             ?.takeIf(::containsPositiveNumber)
         val inlineTarget = maneuverText
             ?.let { targetInInstructionRegex.find(it)?.groupValues?.getOrNull(1) }
-        val separateTarget = values.firstOrNull {
-            it != maneuverText && roadRegex.matches(it)
+        val explicitTarget = values.firstOrNull {
+            it != maneuverText && roadRegex.containsMatchIn(it)
         }
-        val target = inlineTarget ?: separateTarget.orEmpty()
+        val fallbackTarget = values.firstOrNull {
+            it != maneuverText &&
+                it.any(Char::isLetter) &&
+                !durationRegex.containsMatchIn(it) &&
+                !distanceRegex.containsMatchIn(it) &&
+                !genericMapTextRegex.containsMatchIn(it) &&
+                !technicalTextRegex.containsMatchIn(it)
+        }
+        val newTarget = inlineTarget ?: explicitTarget ?: fallbackTarget.orEmpty()
 
         var action = maneuverText.orEmpty()
         duration?.let { action = action.replace(it, "", ignoreCase = true) }
         distance?.let { action = action.replace(it, "", ignoreCase = true) }
-        if (target.isNotEmpty()) {
-            action = action.replace(target, "", ignoreCase = true)
-        }
+        if (newTarget.isNotEmpty()) action = action.replace(newTarget, "", ignoreCase = true)
         action = action
             .replace(Regex("(?i)^za\\s+"), "")
             .replace(Regex("(?i)\\s+(?:w kierunku|na|w)\\s*$"), "")
@@ -59,27 +86,38 @@ object MapsNotificationParser {
             .trim(' ', '-', '•', ',', '.')
             .replaceFirstChar { it.titlecase() }
 
-        val arrow = when {
-            action.contains("w lewo", ignoreCase = true) -> "<-"
-            action.contains("w prawo", ignoreCase = true) -> "->"
-            action.contains("prosto", ignoreCase = true) -> "^"
-            else -> ""
+        if (action.isBlank() && newTarget.isBlank() && previous == null) return null
+
+        val title = duration?.let { "Maps $it" } ?: previous?.title ?: "Maps"
+        val target = newTarget.ifBlank { previous?.messageLine2.orEmpty() }
+        val instruction = if (action.isNotBlank()) {
+            formatInstruction(withArrow(action), distance)
+        } else {
+            val previousAction = previous?.messageLine1
+                ?.replace(oldDistanceSuffixRegex, "")
+                .orEmpty()
+            formatInstruction(previousAction, distance)
+                .ifBlank { previous?.messageLine1.orEmpty() }
         }
-        val compactDistance = distance?.replace(" ", "")
-
-        val instruction = listOfNotNull(
-            listOf(arrow, action).filter(String::isNotBlank).joinToString(" ")
-                .takeIf(String::isNotBlank),
-            compactDistance,
-        ).joinToString(" - ")
-
-        if (duration == null && instruction.isBlank() && target.isBlank()) return null
 
         return HondaDisplayText(
-            title = duration?.let { "Maps $it" } ?: "Maps",
+            title = title,
             messageLine1 = instruction.ifBlank { "Nawigacja" }.take(LINE_LENGTH),
             messageLine2 = target.take(LINE_LENGTH),
         )
+    }
+
+    private fun withArrow(action: String): String = when {
+        action.contains("w lewo", ignoreCase = true) -> "<- $action"
+        action.contains("w prawo", ignoreCase = true) -> "-> $action"
+        action.contains("prosto", ignoreCase = true) -> "^ $action"
+        else -> action
+    }
+
+    private fun formatInstruction(action: String, distance: String?): String {
+        val compactDistance = distance?.replace(" ", "") ?: return action.take(LINE_LENGTH)
+        val suffix = " - $compactDistance"
+        return action.take((LINE_LENGTH - suffix.length).coerceAtLeast(0)) + suffix
     }
 
     private fun containsPositiveNumber(value: String): Boolean = Regex("\\d+")
