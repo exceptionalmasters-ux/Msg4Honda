@@ -25,6 +25,8 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
   dane diagnostyczne nie są wysyłane do radia
 - diagnostyka dołącza obraz PNG/Base64 pola `right_icon`, aby można było
   rozpoznać kształt strzałki niezależnie od zmiennego skrótu obrazu
+- znane obrazy `right_icon` uzupełniają brakujący tekst manewru dla jazdy
+  prosto oraz skrętów w lewo i w prawo, bez zmiany parsera ulic i odległości
 - wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
   oraz ulicę/kierunek;
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki

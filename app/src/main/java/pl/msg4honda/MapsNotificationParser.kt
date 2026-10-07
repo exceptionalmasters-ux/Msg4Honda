@@ -39,6 +39,7 @@ object MapsNotificationParser {
     fun parse(
         rawValues: List<String>,
         previous: HondaDisplayText? = null,
+        iconManeuver: String? = null,
     ): HondaDisplayText? {
         val values = rawValues
             .flatMap { it.lines() }
@@ -56,6 +57,7 @@ object MapsNotificationParser {
         val duration = values.firstNotNullOfOrNull { durationRegex.find(it)?.value }
             ?.takeIf(::containsPositiveNumber)
         val maneuverText = values.firstOrNull { maneuverRegex.containsMatchIn(it) }
+            ?: iconManeuver
         val distance = (maneuverText?.let { distanceRegex.find(it)?.value }
             ?: values.firstNotNullOfOrNull { distanceRegex.find(it)?.value })
             ?.takeIf(::containsPositiveNumber)

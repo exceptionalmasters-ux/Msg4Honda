@@ -86,4 +86,16 @@ class MapsNotificationParserTest {
 
         assertEquals(null, result)
     }
+
+    @Test
+    fun `uses maneuver decoded from Maps icon without changing street parsing`() {
+        val result = MapsNotificationParser.parse(
+            rawValues = listOf("12 min", "10 m", "Cechowa"),
+            iconManeuver = "Skręć w prawo",
+        )!!
+
+        assertEquals("Maps 12 min", result.title)
+        assertEquals("-> Skręć w prawo - 10m", result.messageLine1)
+        assertEquals("Cechowa", result.messageLine2)
+    }
 }

@@ -49,7 +49,8 @@ class MessageNotificationListener : NotificationListenerService() {
     }
 
     private fun handleMapsNotification(sbn: StatusBarNotification) {
-        AppState.setMapsDebug(this, MapsNotificationDiagnostics.create(this, sbn))
+        val diagnostics = MapsNotificationDiagnostics.create(this, sbn)
+        AppState.setMapsDebug(this, diagnostics.text)
         val extras = sbn.notification.extras
         val values = buildList {
             addAll(listOfNotNull(
@@ -76,7 +77,11 @@ class MessageNotificationListener : NotificationListenerService() {
         }.map(String::trim).filter(String::isNotBlank).distinct()
 
         AppState.setLastEvent(this, "Maps: ${values.joinToString(" | ").take(180)}")
-        val navigation = MapsNotificationParser.parse(values, lastNavigation).also {
+        val navigation = MapsNotificationParser.parse(
+            rawValues = values,
+            previous = lastNavigation,
+            iconManeuver = diagnostics.maneuver,
+        ).also {
             lastNavigation = it
         } ?: return
         MessageDisplayCoordinator.showNavigation(this, navigation)

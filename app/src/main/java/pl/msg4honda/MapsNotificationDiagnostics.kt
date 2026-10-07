@@ -22,7 +22,12 @@ object MapsNotificationDiagnostics {
     private const val MAX_VALUE_LENGTH = 1_000
     private const val MAX_DUMP_LENGTH = 30_000
 
-    fun create(context: Context, sbn: StatusBarNotification): String {
+    data class Result(
+        val text: String,
+        val maneuver: String?,
+    )
+
+    fun create(context: Context, sbn: StatusBarNotification): Result {
         val notification = sbn.notification
         val output = StringBuilder()
 
@@ -50,21 +55,31 @@ object MapsNotificationDiagnostics {
 
         output.appendLine()
         output.appendLine("=== REMOTE VIEWS ===")
-        appendRemoteViews(context, sbn, output)
+        val directionHash = appendRemoteViews(context, sbn, output)
+        val maneuver = maneuverForHash(directionHash)
+        output.insert(
+            0,
+            "rozpoznanyHash=${directionHash ?: "brak"}\n" +
+                "rozpoznanyManewr=${maneuver ?: "nieznany"}\n\n",
+        )
 
-        return output.toString().take(MAX_DUMP_LENGTH)
+        return Result(
+            text = output.toString().take(MAX_DUMP_LENGTH),
+            maneuver = maneuver,
+        )
     }
 
     private fun appendRemoteViews(
         context: Context,
         sbn: StatusBarNotification,
         output: StringBuilder,
-    ) {
+    ): String? {
+        var directionHash: String? = null
         val sourceContext = runCatching {
             context.createPackageContext(sbn.packageName, Context.CONTEXT_IGNORE_SECURITY)
         }.getOrElse {
             output.appendLine("sourceContext ERROR: ${it.javaClass.simpleName}: ${it.message}")
-            return
+            return null
         }
 
         val notification = sbn.notification
@@ -85,7 +100,7 @@ object MapsNotificationDiagnostics {
 
         if (views.isEmpty()) {
             output.appendLine("brak RemoteViews")
-            return
+            return null
         }
 
         views.forEach { (name, remoteViews) ->
@@ -99,12 +114,14 @@ object MapsNotificationDiagnostics {
                     output = output,
                     depth = 0,
                     includeRightIconPng = name == "recoveredBigContentView",
+                    onRightIconHash = { hash -> directionHash = hash },
                 )
             }
                 .onFailure {
                     output.appendLine("apply ERROR: ${it.javaClass.simpleName}: ${it.message}")
                 }
         }
+        return directionHash
     }
 
     private fun appendViewTree(
@@ -113,6 +130,7 @@ object MapsNotificationDiagnostics {
         output: StringBuilder,
         depth: Int,
         includeRightIconPng: Boolean,
+        onRightIconHash: (String) -> Unit,
     ) {
         if (output.length >= MAX_DUMP_LENGTH) return
 
@@ -127,12 +145,20 @@ object MapsNotificationDiagnostics {
             is TextView -> output.appendLine(
                 "$prefix TextView $idName text=${view.text.toString().take(MAX_VALUE_LENGTH)}",
             )
-            is ImageView -> output.appendLine(
-                "$prefix ImageView $idName drawable=${formatDrawable(
-                    view,
-                    includePng = includeRightIconPng && idName == "right_icon",
-                )}",
-            )
+            is ImageView -> {
+                val isRightIcon = idName == "right_icon"
+                if (isRightIcon) {
+                    (view.drawable as? BitmapDrawable)?.bitmap?.let { bitmap ->
+                        onRightIconHash(bitmapFingerprint(bitmap))
+                    }
+                }
+                output.appendLine(
+                    "$prefix ImageView $idName drawable=${formatDrawable(
+                        view,
+                        includePng = includeRightIconPng && isRightIcon,
+                    )}",
+                )
+            }
         }
 
         if (view is ViewGroup) {
@@ -143,6 +169,7 @@ object MapsNotificationDiagnostics {
                     output,
                     depth + 1,
                     includeRightIconPng,
+                    onRightIconHash,
                 )
             }
         }
@@ -201,13 +228,22 @@ object MapsNotificationDiagnostics {
     }
 
     private fun formatBitmap(bitmap: Bitmap): String {
-        val fingerprint = runCatching {
-            MessageDigest.getInstance("SHA-256")
-                .digest(bitmapPng(bitmap))
-                .take(6)
-                .joinToString("") { "%02x".format(it) }
-        }.getOrElse { "error-${it.javaClass.simpleName}" }
+        val fingerprint = bitmapFingerprint(bitmap)
         return "Bitmap(${bitmap.width}x${bitmap.height}, hash=$fingerprint)"
+    }
+
+    private fun bitmapFingerprint(bitmap: Bitmap): String = runCatching {
+        MessageDigest.getInstance("SHA-256")
+            .digest(bitmapPng(bitmap))
+            .take(6)
+            .joinToString("") { "%02x".format(it) }
+    }.getOrElse { "error-${it.javaClass.simpleName}" }
+
+    private fun maneuverForHash(hash: String?): String? = when (hash) {
+        "17db2c2d28b7" -> "Skręć w prawo"
+        "e8279e455a98" -> "Skręć w lewo"
+        "f21e2536ff8f" -> "Jedź prosto"
+        else -> null
     }
 
     private fun bitmapPng(bitmap: Bitmap): ByteArray = ByteArrayOutputStream().use { stream ->
