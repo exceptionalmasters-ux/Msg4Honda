@@ -12,7 +12,7 @@ object MapsNotificationParser {
         RegexOption.IGNORE_CASE,
     )
     private val maneuverRegex = Regex(
-        "skręć|jedź|zjedź|zawróć|rond|trzymaj|kontynuuj|wjedź|wybierz|opuść",
+        "skręć|jedź|zjedź|zawróć|rond|trzymaj",
         RegexOption.IGNORE_CASE,
     )
     private val roadRegex = Regex(
@@ -24,7 +24,7 @@ object MapsNotificationParser {
         RegexOption.IGNORE_CASE,
     )
     private val genericMapTextRegex = Regex(
-        "^(?:google )?maps$|bez tytułu|nawigacja|prowadzenie do celu|trasa|zakończ nawigację|wyjdź z nawigacji",
+        "^(?:google )?maps$|bez tytułu|nawigacja|prowadzenie do celu|trasa",
         RegexOption.IGNORE_CASE,
     )
     private val technicalTextRegex = Regex(

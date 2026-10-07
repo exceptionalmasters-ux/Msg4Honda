@@ -1,14 +1,8 @@
 package pl.msg4honda
 
 import android.app.Notification
-import android.content.Context
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.RemoteViews
-import android.widget.TextView
 
 class MessageNotificationListener : NotificationListenerService() {
     private var lastNavigation: HondaDisplayText? = null
@@ -57,10 +51,6 @@ class MessageNotificationListener : NotificationListenerService() {
     private fun handleMapsNotification(sbn: StatusBarNotification) {
         val extras = sbn.notification.extras
         val values = buildList {
-            // Google Maps often keeps the current manoeuvre only in its custom
-            // notification layout. Read that first so a new turn replaces the
-            // cached one even when the standard extras contain only a distance.
-            addAll(extractRemoteViewText(sbn))
             addAll(listOfNotNull(
                 extras.getCharSequence(Notification.EXTRA_TITLE),
                 extras.getCharSequence(Notification.EXTRA_TEXT),
@@ -89,55 +79,5 @@ class MessageNotificationListener : NotificationListenerService() {
             lastNavigation = it
         } ?: return
         MessageDisplayCoordinator.showNavigation(this, navigation)
-    }
-
-    private fun extractRemoteViewText(sbn: StatusBarNotification): List<String> {
-        val sourceContext = try {
-            createPackageContext(sbn.packageName, Context.CONTEXT_IGNORE_SECURITY)
-        } catch (_: Exception) {
-            return emptyList()
-        }
-
-        val notification = sbn.notification
-        val remoteViews = buildList<RemoteViews> {
-            try {
-                Notification.Builder.recoverBuilder(this@MessageNotificationListener, notification)
-                    .createBigContentView()
-                    ?.let(::add)
-            } catch (_: Exception) {
-                // Some Maps versions cannot be reconstructed by recoverBuilder.
-            }
-            notification.bigContentView?.let(::add)
-            try {
-                Notification.Builder.recoverBuilder(this@MessageNotificationListener, notification)
-                    .createContentView()
-                    ?.let(::add)
-            } catch (_: Exception) {
-                // Fall back to the RemoteViews already stored on the notification.
-            }
-            notification.contentView?.let(::add)
-        }
-
-        return buildList {
-            remoteViews.forEach { remoteView ->
-                try {
-                    val root = remoteView.apply(sourceContext, FrameLayout(sourceContext))
-                    collectText(root, this)
-                } catch (_: Exception) {
-                    // A layout change must not stop notification processing.
-                }
-            }
-        }
-    }
-
-    private fun collectText(view: View, output: MutableList<String>) {
-        if (view is TextView) {
-            view.text?.toString()?.trim()?.takeIf(String::isNotBlank)?.let(output::add)
-        }
-        if (view is ViewGroup) {
-            for (index in 0 until view.childCount) {
-                collectText(view.getChildAt(index), output)
-            }
-        }
     }
 }

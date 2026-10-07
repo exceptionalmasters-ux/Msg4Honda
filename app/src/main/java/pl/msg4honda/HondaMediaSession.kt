@@ -18,6 +18,11 @@ class HondaMediaSession(
     onNext: () -> Unit,
     onPrevious: () -> Unit,
 ) {
+    companion object {
+        private const val CLEAR_METADATA_GRACE_MS = 750L
+        private const val EMPTY_RADIO_FIELD = " "
+    }
+
     private val audioManager = context.getSystemService(AudioManager::class.java)
     private val mainHandler = Handler(Looper.getMainLooper())
     private val audioAttributes = AudioAttributes.Builder()
@@ -25,6 +30,7 @@ class HondaMediaSession(
         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
         .build()
     private var silentTrack: AudioTrack? = null
+    private var stateGeneration = 0
 
     private val session = MediaSession(context, "Msg4Honda").apply {
         setFlags(
@@ -58,6 +64,7 @@ class HondaMediaSession(
     }
 
     fun showMessage(displayText: HondaDisplayText) {
+        stateGeneration += 1
         stopSilentPlayback()
 
         session.isActive = true
@@ -89,18 +96,36 @@ class HondaMediaSession(
     }
 
     fun hide() {
+        val hideGeneration = ++stateGeneration
+        // When no other player is active, many car radios keep the last AVRCP
+        // metadata even after a MediaSession is deactivated. Publish empty
+        // fields first and leave the session active briefly so the radio has a
+        // chance to receive the clearing update.
+        session.setMetadata(
+            MediaMetadata.Builder()
+                .putString(MediaMetadata.METADATA_KEY_TITLE, EMPTY_RADIO_FIELD)
+                .putString(MediaMetadata.METADATA_KEY_ALBUM, EMPTY_RADIO_FIELD)
+                .putString(MediaMetadata.METADATA_KEY_ARTIST, EMPTY_RADIO_FIELD)
+                .build(),
+        )
         session.setPlaybackState(
             PlaybackState.Builder()
                 .setState(PlaybackState.STATE_STOPPED, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 0f)
                 .setActions(0L)
                 .build(),
         )
-        session.isActive = false
         stopSilentPlayback()
+        mainHandler.postDelayed({
+            if (stateGeneration == hideGeneration) {
+                session.isActive = false
+            }
+        }, CLEAR_METADATA_GRACE_MS)
     }
 
     fun release() {
+        stateGeneration += 1
         stopSilentPlayback()
+        session.isActive = false
         session.release()
     }
 

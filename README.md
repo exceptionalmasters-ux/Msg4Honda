@@ -18,13 +18,13 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
   z powrotem do Spotify
 - obsługiwane są zarówno komendy AVRCP, jak i surowe zdarzenia przycisków
 - ostatnia strona znika po 5 sekundach, wszystkie strony są wtedy usuwane
+- po wygaszeniu aplikacja wysyła puste metadane, aby komunikat zniknął także
+  wtedy, gdy żaden odtwarzacz muzyki nie przejmuje ekranu radia
 - wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
   oraz ulicę/kierunek;
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki
 - aktualizacje Map zawierające tylko malejącą odległość zachowują ostatni
   manewr i ulicę zamiast zastępować je samą liczbą metrów
-- bieżący manewr jest odczytywany również z niestandardowego widoku
-  powiadomienia Map, dzięki czemu zmiana kierunku zastępuje poprzednią
 - brak uprawnienia `INTERNET`
 - brak zapisywania treści wiadomości
 - bezgłośny strumień wymuszający wybór sesji przez radio, ale bez przejmowania
