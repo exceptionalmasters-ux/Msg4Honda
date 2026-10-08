@@ -32,7 +32,7 @@ object MapsNotificationParser {
         RegexOption.IGNORE_CASE,
     )
     private val oldDistanceSuffixRegex = Regex(
-        "\\s+-\\s+\\d+(?:[,.]\\d+)?(?:m|km)$",
+        "\\s*-\\s*\\d+(?:[,.]\\d+)?(?:m|km)$",
         RegexOption.IGNORE_CASE,
     )
 
@@ -98,12 +98,12 @@ object MapsNotificationParser {
 
         val title = if (duration != null) {
             listOfNotNull(
-                speedLimit?.takeIf { it in 5..160 }?.let { "Maps $it" } ?: "Maps",
-                remainingDistance?.replace(" ", "")?.replace(',', '.'),
-                duration,
-            ).joinToString(" - ").take(LINE_LENGTH)
+                speedLimit?.takeIf { it in 5..160 }?.let { "Og.${it}km/h" },
+                remainingDistance?.let(::compactDistance),
+                compactDuration(duration),
+            ).joinToString("-").take(LINE_LENGTH)
         } else {
-            previous?.title ?: "Maps"
+            previous?.title ?: "Nawigacja"
         }
         val target = newTarget.ifBlank { previous?.messageLine2.orEmpty() }
         val instruction = if (action.isNotBlank()) {
@@ -124,17 +124,25 @@ object MapsNotificationParser {
     }
 
     private fun withArrow(action: String): String = when {
-        action.contains("w lewo", ignoreCase = true) -> "<- $action"
-        action.contains("w prawo", ignoreCase = true) -> "-> $action"
-        action.contains("prosto", ignoreCase = true) -> "^ $action"
+        action.contains("w lewo", ignoreCase = true) -> "<-$action"
+        action.contains("w prawo", ignoreCase = true) -> "->$action"
+        action.contains("prosto", ignoreCase = true) -> "^$action"
         else -> action
     }
 
     private fun formatInstruction(action: String, distance: String?): String {
-        val compactDistance = distance?.replace(" ", "") ?: return action.take(LINE_LENGTH)
-        val suffix = " - $compactDistance"
+        val compactDistance = distance?.let(::compactDistance) ?: return action.take(LINE_LENGTH)
+        val suffix = "-$compactDistance"
         return action.take((LINE_LENGTH - suffix.length).coerceAtLeast(0)) + suffix
     }
+
+    private fun compactDistance(value: String): String = value
+        .replace(Regex("\\s+"), "")
+        .replace(',', '.')
+
+    private fun compactDuration(value: String): String = value
+        .replace(Regex("(?i)godz\\.?"), "h")
+        .replace(Regex("\\s+"), "")
 
     private fun containsPositiveNumber(value: String): Boolean = Regex("\\d+")
         .findAll(value)

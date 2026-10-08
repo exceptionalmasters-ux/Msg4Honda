@@ -35,11 +35,11 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
   oraz ulicę/kierunek;
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki
-- pierwszy wiersz Map zawiera dystans całej trasy i czas, np.
-  `Maps - 3.1km - 10 min`
+- pierwszy wiersz Map ma zwarty format bez zbędnych spacji, np.
+  `3.1km-10min`
 - opcjonalna usługa dostępności obserwuje wyłącznie ekran Google Maps i próbuje
   lokalnie odczytać widoczne ograniczenie prędkości; świeży odczyt jest dodawany
-  do pierwszego wiersza, np. `Maps 70 - 13km - 30 min`
+  do pierwszego wiersza, np. `Og.70km/h-13km-30min`
 - odczyt ograniczenia wygasa po minucie, nie uruchamia internetu i pozostawia
   dotychczasowy tytuł Map, jeśli Google Maps nie udostępni wartości
 - aktualizacje Map zawierające tylko malejącą odległość zachowują ostatni

@@ -10,8 +10,8 @@ class MapsNotificationParserTest {
             listOf("18 min", "Za 300 m skręć w prawo w ul. Krakowska"),
         )!!
 
-        assertEquals("Maps - 18 min", result.title)
-        assertEquals("-> Skręć w prawo - 300m", result.messageLine1)
+        assertEquals("18min", result.title)
+        assertEquals("->Skręć w prawo-300m", result.messageLine1)
         assertEquals("ul. Krakowska", result.messageLine2)
     }
 
@@ -21,8 +21,8 @@ class MapsNotificationParserTest {
             listOf("1 h 5 min", "Zjedź za 2 km w kierunku A4 Rzeszów"),
         )!!
 
-        assertEquals("Maps - 1 h 5 min", result.title)
-        assertEquals("Zjedź - 2km", result.messageLine1)
+        assertEquals("1h5min", result.title)
+        assertEquals("Zjedź-2km", result.messageLine1)
         assertEquals("A4 Rzeszów", result.messageLine2)
     }
 
@@ -35,8 +35,8 @@ class MapsNotificationParserTest {
             listOf("7 min", "Jedź prosto przez 1 km", "A4 Rzeszów"),
         )!!
 
-        assertEquals("<- Skręć w lewo - 80m", left.messageLine1)
-        assertEquals("^ Jedź prosto - 1km", straight.messageLine1)
+        assertEquals("<-Skręć w lewo-80m", left.messageLine1)
+        assertEquals("^Jedź prosto-1km", straight.messageLine1)
     }
 
     @Test
@@ -54,8 +54,8 @@ class MapsNotificationParserTest {
 
         val result = MapsNotificationParser.parse(listOf("7 min", "30 m"), previous)!!
 
-        assertEquals("Maps - 7 min", result.title)
-        assertEquals("-> Skręć w prawo - 30m", result.messageLine1)
+        assertEquals("7min", result.title)
+        assertEquals("->Skręć w prawo-30m", result.messageLine1)
         assertEquals("ul. Długa", result.messageLine2)
     }
 
@@ -65,7 +65,7 @@ class MapsNotificationParserTest {
             listOf("8 min", "Skręć w lewo", "30 m", "Jana Pawła II"),
         )!!
 
-        assertEquals("<- Skręć w lewo - 30m", result.messageLine1)
+        assertEquals("<-Skręć w lewo-30m", result.messageLine1)
         assertEquals("Jana Pawła II", result.messageLine2)
     }
 
@@ -94,8 +94,8 @@ class MapsNotificationParserTest {
             iconManeuver = "Skręć w prawo",
         )!!
 
-        assertEquals("Maps - 12 min", result.title)
-        assertEquals("-> Skręć w prawo - 10m", result.messageLine1)
+        assertEquals("12min", result.title)
+        assertEquals("->Skręć w prawo-10m", result.messageLine1)
         assertEquals("Cechowa", result.messageLine2)
     }
 
@@ -110,8 +110,8 @@ class MapsNotificationParserTest {
             iconManeuver = "Jedź prosto",
         )!!
 
-        assertEquals("Maps - 3.1km - 10 min", result.title)
-        assertEquals("^ Jedź prosto - 300m", result.messageLine1)
+        assertEquals("3.1km-10min", result.title)
+        assertEquals("^Jedź prosto-300m", result.messageLine1)
         assertEquals("Zakopiańska", result.messageLine2)
     }
 
@@ -123,6 +123,17 @@ class MapsNotificationParserTest {
             speedLimit = 70,
         )!!
 
-        assertEquals("Maps 70 - 13km - 30 min", result.title)
+        assertEquals("Og.70km/h-13km-30min", result.title)
+    }
+
+    @Test
+    fun `compacts hour duration in Maps title`() {
+        val result = MapsNotificationParser.parse(
+            rawValues = listOf("1 h 10 min · 20 km · Będziesz o 14:00", "300 m", "A4 Katowice"),
+            iconManeuver = "Jedź prosto",
+            speedLimit = 70,
+        )!!
+
+        assertEquals("Og.70km/h-20km-1h10min", result.title)
     }
 }
