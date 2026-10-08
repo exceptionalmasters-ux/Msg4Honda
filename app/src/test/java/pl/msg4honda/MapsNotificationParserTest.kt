@@ -123,7 +123,7 @@ class MapsNotificationParserTest {
             speedLimit = 70,
         )!!
 
-        assertEquals("Og.70km/h-13km-30min", result.title)
+        assertEquals("70km/h-13km-30min", result.title)
     }
 
     @Test
@@ -134,6 +134,34 @@ class MapsNotificationParserTest {
             speedLimit = 70,
         )!!
 
-        assertEquals("Og.70km/h-20km-1h10min", result.title)
+        assertEquals("70km/h-20km-1h10min", result.title)
+    }
+
+    @Test
+    fun `road event replaces street in third radio line`() {
+        val result = MapsNotificationParser.parse(
+            rawValues = listOf("10 min · 3 km", "300 m", "Zakopiańska"),
+            iconManeuver = "Jedź prosto",
+            roadEvent = "KONTROLA PRĘDKOŚCI",
+        )!!
+
+        assertEquals("KONTROLA PRĘDKOŚCI", result.messageLine2)
+    }
+
+    @Test
+    fun `expired road event does not leak into distance-only update`() {
+        val previous = MapsNotificationParser.parse(
+            rawValues = listOf("10 min · 3 km", "300 m", "Zakopiańska"),
+            iconManeuver = "Jedź prosto",
+            roadEvent = "KOREK",
+        )!!
+
+        val result = MapsNotificationParser.parse(
+            rawValues = listOf("9 min · 2,8 km", "200 m"),
+            previous = previous,
+            iconManeuver = "Jedź prosto",
+        )!!
+
+        assertEquals("", result.messageLine2)
     }
 }

@@ -8,9 +8,15 @@ object AppState {
     private const val KEY_LAST_EVENT = "last_event"
     private const val KEY_MAPS_DEBUG = "maps_debug"
     private const val KEY_MAPS_ACCESSIBILITY_DEBUG = "maps_accessibility_debug"
+    private const val KEY_MAPS_ACCESSIBILITY_EVENT_DEBUG = "maps_accessibility_event_debug"
     private const val KEY_SPEED_LIMIT = "speed_limit"
     private const val KEY_SPEED_LIMIT_TIME = "speed_limit_time"
+    private const val KEY_ROAD_EVENT = "road_event"
+    private const val KEY_ROAD_EVENT_TIME = "road_event_time"
+    private const val KEY_ROAD_EVENT_ANNOUNCED_TIME = "road_event_announced_time"
     private const val SPEED_LIMIT_MAX_AGE_MS = 60_000L
+    private const val ROAD_EVENT_MAX_AGE_MS = 20_000L
+    private const val ROAD_EVENT_REPEAT_MS = 60_000L
 
     fun isEnabled(context: Context): Boolean =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -39,10 +45,16 @@ object AppState {
         val preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val notification = preferences.getString(KEY_MAPS_DEBUG, "").orEmpty()
         val accessibility = preferences.getString(KEY_MAPS_ACCESSIBILITY_DEBUG, "").orEmpty()
+        val accessibilityEvents = preferences
+            .getString(KEY_MAPS_ACCESSIBILITY_EVENT_DEBUG, "")
+            .orEmpty()
         return listOfNotNull(
             notification.takeIf(String::isNotBlank),
             accessibility.takeIf(String::isNotBlank)?.let {
                 "=== ODCZYT EKRANU MAPS ===\n$it"
+            },
+            accessibilityEvents.takeIf(String::isNotBlank)?.let {
+                "=== ZDARZENIA DOSTĘPNOŚCI MAPS ===\n$it"
             },
         ).joinToString("\n\n")
     }
@@ -61,6 +73,13 @@ object AppState {
             .apply()
     }
 
+    fun setMapsAccessibilityEventDebug(context: Context, value: String) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putString(KEY_MAPS_ACCESSIBILITY_EVENT_DEBUG, value)
+            .apply()
+    }
+
     fun setSpeedLimit(context: Context, speedLimit: Int) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .edit()
@@ -74,6 +93,31 @@ object AppState {
         val timestamp = preferences.getLong(KEY_SPEED_LIMIT_TIME, 0L)
         if (System.currentTimeMillis() - timestamp > SPEED_LIMIT_MAX_AGE_MS) return null
         return preferences.getInt(KEY_SPEED_LIMIT, 0).takeIf { it in 5..160 }
+    }
+
+    fun recordRoadEvent(context: Context, roadEvent: String): Boolean {
+        val preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val now = System.currentTimeMillis()
+        val previous = preferences.getString(KEY_ROAD_EVENT, "").orEmpty()
+        val lastAnnounced = preferences.getLong(KEY_ROAD_EVENT_ANNOUNCED_TIME, 0L)
+        val shouldAnnounce = previous != roadEvent || now - lastAnnounced > ROAD_EVENT_REPEAT_MS
+        preferences.edit()
+            .putString(KEY_ROAD_EVENT, roadEvent)
+            .putLong(KEY_ROAD_EVENT_TIME, now)
+            .apply {
+                if (shouldAnnounce) putLong(KEY_ROAD_EVENT_ANNOUNCED_TIME, now)
+            }
+            .apply()
+        return shouldAnnounce
+    }
+
+    fun roadEvent(context: Context): String? {
+        val preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val timestamp = preferences.getLong(KEY_ROAD_EVENT_TIME, 0L)
+        if (System.currentTimeMillis() - timestamp > ROAD_EVENT_MAX_AGE_MS) return null
+        return preferences.getString(KEY_ROAD_EVENT, "")
+            .orEmpty()
+            .takeIf(MapsRoadEventReader::isKnownLabel)
     }
 
     fun isSourceEnabled(context: Context, source: MessageSource): Boolean =

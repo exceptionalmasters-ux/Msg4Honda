@@ -41,6 +41,7 @@ object MapsNotificationParser {
         previous: HondaDisplayText? = null,
         iconManeuver: String? = null,
         speedLimit: Int? = null,
+        roadEvent: String? = null,
     ): HondaDisplayText? {
         val values = rawValues
             .flatMap { it.lines() }
@@ -98,14 +99,18 @@ object MapsNotificationParser {
 
         val title = if (duration != null) {
             listOfNotNull(
-                speedLimit?.takeIf { it in 5..160 }?.let { "Og.${it}km/h" },
+                speedLimit?.takeIf { it in 5..160 }?.let { "${it}km/h" },
                 remainingDistance?.let(::compactDistance),
                 compactDuration(duration),
             ).joinToString("-").take(LINE_LENGTH)
         } else {
             previous?.title ?: "Nawigacja"
         }
-        val target = newTarget.ifBlank { previous?.messageLine2.orEmpty() }
+        val previousTarget = previous?.messageLine2
+            ?.takeUnless(MapsRoadEventReader::isKnownLabel)
+            .orEmpty()
+        val target = roadEvent?.takeIf(MapsRoadEventReader::isKnownLabel)
+            ?: newTarget.ifBlank { previousTarget }
         val instruction = if (action.isNotBlank()) {
             formatInstruction(withArrow(action), distance)
         } else {

@@ -39,9 +39,14 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
   `3.1km-10min`
 - opcjonalna usługa dostępności obserwuje wyłącznie ekran Google Maps i próbuje
   lokalnie odczytać widoczne ograniczenie prędkości; świeży odczyt jest dodawany
-  do pierwszego wiersza, np. `Og.70km/h-13km-30min`
+  do pierwszego wiersza, np. `70km/h-13km-30min`
 - odczyt ograniczenia wygasa po minucie, nie uruchamia internetu i pozostawia
   dotychczasowy tytuł Map, jeśli Google Maps nie udostępni wartości
+- ta sama usługa zbiera lokalne teksty alertów drogowych Google Maps; pojedyncze
+  rozpoznane zdarzenie, np. korek, kontrola prędkości lub wypadek, tymczasowo
+  zastępuje ulicę w trzecim wierszu radia
+- wiele nazw zdarzeń widocznych jednocześnie jest traktowanych jako menu
+  `Zgłoś`, a nie prawdziwy alert; surowe zdarzenia są dostępne w `DANE MAPS`
 - aktualizacje Map zawierające tylko malejącą odległość zachowują ostatni
   manewr i ulicę zamiast zastępować je samą liczbą metrów
 - brak uprawnienia `INTERNET`

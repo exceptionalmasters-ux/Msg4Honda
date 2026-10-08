@@ -19,6 +19,7 @@ object MessageDisplayCoordinator {
     private var currentPage = 0
     private var mediaSession: HondaMediaSession? = null
     private var displayKind: DisplayKind? = null
+    private var currentNavigation: HondaDisplayText? = null
     private var pendingAction: Runnable? = null
 
     @Synchronized
@@ -46,11 +47,18 @@ object MessageDisplayCoordinator {
     }
 
     @Synchronized
+    fun showRoadEvent(context: Context, roadEvent: String) {
+        if (!AppState.isEnabled(context)) return
+        handler.post { activateRoadEvent(roadEvent) }
+    }
+
+    @Synchronized
     fun stop(context: Context) {
         cancelPendingAction()
         pages.clear()
         currentPage = 0
         displayKind = null
+        currentNavigation = null
         mediaSession?.hide()
         mediaSession?.release()
         mediaSession = null
@@ -63,6 +71,7 @@ object MessageDisplayCoordinator {
         if (displayKind != DisplayKind.MESSAGES) {
             currentPage = 0
             displayKind = DisplayKind.MESSAGES
+            currentNavigation = null
             getSession(context).showMessage(pages[currentPage])
         }
         scheduleMessageAction()
@@ -73,7 +82,20 @@ object MessageDisplayCoordinator {
         if (!AppState.isEnabled(context) || pages.isNotEmpty()) return
 
         displayKind = DisplayKind.NAVIGATION
+        currentNavigation = navigation
         getSession(context).showMessage(navigation)
+        cancelPendingAction()
+        pendingAction = Runnable { expireNavigation() }.also {
+            handler.postDelayed(it, NAVIGATION_TIME_MS)
+        }
+    }
+
+    @Synchronized
+    private fun activateRoadEvent(roadEvent: String) {
+        if (displayKind != DisplayKind.NAVIGATION) return
+        val navigation = currentNavigation?.copy(messageLine2 = roadEvent.take(24)) ?: return
+        currentNavigation = navigation
+        mediaSession?.showMessage(navigation)
         cancelPendingAction()
         pendingAction = Runnable { expireNavigation() }.also {
             handler.postDelayed(it, NAVIGATION_TIME_MS)
@@ -134,6 +156,7 @@ object MessageDisplayCoordinator {
 
         cancelPendingAction()
         displayKind = null
+        currentNavigation = null
         mediaSession?.hide()
         mediaSession?.forwardMediaKey(keyCode)
     }
@@ -174,6 +197,7 @@ object MessageDisplayCoordinator {
         cancelPendingAction()
         if (displayKind == DisplayKind.NAVIGATION) {
             displayKind = null
+            currentNavigation = null
             mediaSession?.hide()
         }
     }
