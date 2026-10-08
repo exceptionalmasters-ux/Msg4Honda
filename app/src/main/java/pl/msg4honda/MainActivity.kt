@@ -3,6 +3,7 @@ package pl.msg4honda
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.NotificationManager
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
@@ -14,6 +15,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.ScrollView
 import android.widget.TextView
+import android.view.accessibility.AccessibilityManager
 
 class MainActivity : Activity() {
     private lateinit var statusText: TextView
@@ -24,6 +26,7 @@ class MainActivity : Activity() {
     private lateinit var smsToggle: CheckBox
     private lateinit var mapsToggle: CheckBox
     private lateinit var mapsDebugButton: Button
+    private lateinit var speedAccessButton: Button
     private var waitingForPermission = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,6 +41,7 @@ class MainActivity : Activity() {
         smsToggle = findViewById(R.id.smsToggle)
         mapsToggle = findViewById(R.id.mapsToggle)
         mapsDebugButton = findViewById(R.id.mapsDebugButton)
+        speedAccessButton = findViewById(R.id.speedAccessButton)
 
         bindSourceToggle(whatsAppToggle, MessageSource.WHATSAPP)
         bindSourceToggle(messengerToggle, MessageSource.MESSENGER)
@@ -57,6 +61,9 @@ class MainActivity : Activity() {
             }
         }
         mapsDebugButton.setOnClickListener { showMapsDebug() }
+        speedAccessButton.setOnClickListener {
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }
     }
 
     override fun onResume() {
@@ -88,6 +95,19 @@ class MainActivity : Activity() {
         } else {
             View.VISIBLE
         }
+        speedAccessButton.setText(
+            if (hasSpeedLimitAccess()) R.string.speed_access_on else R.string.speed_access_off,
+        )
+    }
+
+    private fun hasSpeedLimitAccess(): Boolean {
+        val manager = getSystemService(AccessibilityManager::class.java)
+        return manager.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+            .any { info ->
+                val service = info.resolveInfo.serviceInfo
+                service.packageName == packageName &&
+                    service.name == MapsAccessibilityService::class.java.name
+            }
     }
 
     private fun enableAndTest() {

@@ -56,7 +56,7 @@ object MapsNotificationDiagnostics {
         output.appendLine()
         output.appendLine("=== REMOTE VIEWS ===")
         val directionHash = appendRemoteViews(context, sbn, output)
-        val maneuver = maneuverForHash(directionHash)
+        val maneuver = MapsManeuverCatalog.forHash(directionHash)
         output.insert(
             0,
             "rozpoznanyHash=${directionHash ?: "brak"}\n" +
@@ -238,16 +238,6 @@ object MapsNotificationDiagnostics {
             .take(6)
             .joinToString("") { "%02x".format(it) }
     }.getOrElse { "error-${it.javaClass.simpleName}" }
-
-    private fun maneuverForHash(hash: String?): String? = when (hash) {
-        "17db2c2d28b7" -> "Skręć w prawo"
-        "e8279e455a98" -> "Skręć w lewo"
-        "f21e2536ff8f" -> "Jedź prosto"
-        "6f20e21aca00" -> "Lekko w prawo"
-        "9b5b78d96b7f" -> "Zawróć"
-        "6e73aba63816" -> "Lekko w lewo"
-        else -> null
-    }
 
     private fun bitmapPng(bitmap: Bitmap): ByteArray = ByteArrayOutputStream().use { stream ->
         check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream))

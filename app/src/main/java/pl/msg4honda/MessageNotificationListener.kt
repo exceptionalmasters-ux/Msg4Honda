@@ -81,6 +81,7 @@ class MessageNotificationListener : NotificationListenerService() {
             rawValues = values,
             previous = lastNavigation,
             iconManeuver = diagnostics.maneuver,
+            speedLimit = AppState.speedLimit(this),
         ).also {
             lastNavigation = it
         } ?: return

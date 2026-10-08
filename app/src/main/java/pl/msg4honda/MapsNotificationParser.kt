@@ -40,6 +40,7 @@ object MapsNotificationParser {
         rawValues: List<String>,
         previous: HondaDisplayText? = null,
         iconManeuver: String? = null,
+        speedLimit: Int? = null,
     ): HondaDisplayText? {
         val values = rawValues
             .flatMap { it.lines() }
@@ -97,7 +98,7 @@ object MapsNotificationParser {
 
         val title = if (duration != null) {
             listOfNotNull(
-                "Maps",
+                speedLimit?.takeIf { it in 5..160 }?.let { "Maps $it" } ?: "Maps",
                 remainingDistance?.replace(" ", "")?.replace(',', '.'),
                 duration,
             ).joinToString(" - ").take(LINE_LENGTH)

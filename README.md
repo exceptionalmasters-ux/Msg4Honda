@@ -30,12 +30,18 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
   rozpoznać kształt strzałki niezależnie od zmiennego skrótu obrazu
 - znane obrazy `right_icon` uzupełniają brakujący tekst manewru dla jazdy
   prosto, skrętów w lewo, w prawo, lekko w lewo i lekko w prawo oraz
-  zawracania, bez zmiany parsera ulic i odległości
+  zawracania, rond, kontynuowania tą samą trasą i trzymania się prawej strony,
+  bez zmiany parsera ulic i odległości
 - wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
   oraz ulicę/kierunek;
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki
 - pierwszy wiersz Map zawiera dystans całej trasy i czas, np.
   `Maps - 3.1km - 10 min`
+- opcjonalna usługa dostępności obserwuje wyłącznie ekran Google Maps i próbuje
+  lokalnie odczytać widoczne ograniczenie prędkości; świeży odczyt jest dodawany
+  do pierwszego wiersza, np. `Maps 70 - 13km - 30 min`
+- odczyt ograniczenia wygasa po minucie, nie uruchamia internetu i pozostawia
+  dotychczasowy tytuł Map, jeśli Google Maps nie udostępni wartości
 - aktualizacje Map zawierające tylko malejącą odległość zachowują ostatni
   manewr i ulicę zamiast zastępować je samą liczbą metrów
 - brak uprawnienia `INTERNET`
@@ -59,8 +65,10 @@ Actions buduje również artefakt `Msg4Honda-debug` po każdym pushu do `main`.
 1. Sparuj telefon z Hondą i uruchom muzykę ze Spotify.
 2. Uruchom Msg4Honda i naciśnij START.
 3. Przy pierwszym uruchomieniu przyznaj dostęp do powiadomień.
-4. Wyślij testową wiadomość z jednego z włączonych źródeł.
-5. Sprawdź, czy radio pokazuje treść bez przerwania muzyki i czy po 5 sekundach
+4. Aby testować ograniczenia prędkości, naciśnij `WŁĄCZ OGRANICZENIA` i włącz
+   usługę `Ograniczenia prędkości Maps` w ustawieniach dostępności Androida.
+5. Wyślij testową wiadomość z jednego z włączonych źródeł.
+6. Sprawdź, czy radio pokazuje treść bez przerwania muzyki i czy po 5 sekundach
    wracają metadane Spotify.
 
 Jeśli komunikat „Test połączenia” pojawia się po naciśnięciu START, ale

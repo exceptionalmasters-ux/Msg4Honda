@@ -114,4 +114,15 @@ class MapsNotificationParserTest {
         assertEquals("^ Jedź prosto - 300m", result.messageLine1)
         assertEquals("Zakopiańska", result.messageLine2)
     }
+
+    @Test
+    fun `adds fresh speed limit to Maps title`() {
+        val result = MapsNotificationParser.parse(
+            rawValues = listOf("30 min · 13 km · Będziesz o 12:36", "500 m", "DK94 Bytom"),
+            iconManeuver = "Trzymaj się prawej strony",
+            speedLimit = 70,
+        )!!
+
+        assertEquals("Maps 70 - 13km - 30 min", result.title)
+    }
 }
