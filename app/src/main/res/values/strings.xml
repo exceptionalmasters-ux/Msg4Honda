@@ -12,7 +12,7 @@
     <string name="sms_rcs">SMS / RCS</string>
     <string name="maps">Google Maps</string>
     <string name="privacy_hint">Tylko wybrane źródła • bez internetu • wiadomości nie są zapisywane</string>
-    <string name="test_sent">wysłano test do radia</string>
+    <string name="welcome_sent">wysłano powitanie do radia</string>
     <string name="show_maps_debug">DANE MAPS</string>
     <string name="speed_access_off">WŁĄCZ OGRANICZENIA</string>
     <string name="speed_access_on">OGRANICZENIA: WŁĄCZONE</string>

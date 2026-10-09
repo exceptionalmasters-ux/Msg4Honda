@@ -53,8 +53,8 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - brak zapisywania treści wiadomości
 - bezgłośny strumień wymuszający wybór sesji przez radio, ale bez przejmowania
   audio focus; Spotify powinno odtwarzać muzykę bez przerwy
-- po naciśnięciu START aplikacja publikuje komunikat „Test połączenia”, co
-  pozwala sprawdzić radio bez czekania na wiadomość WhatsApp
+- po naciśnięciu START aplikacja wita użytkownika i pokazuje włączone źródła,
+  np. `Msg4Honda` / `Witaj :)` / `Whats, Mess, SMS, Maps`
 
 ## Budowanie
 
@@ -76,7 +76,7 @@ Actions buduje również artefakt `Msg4Honda-debug` po każdym pushu do `main`.
 6. Sprawdź, czy radio pokazuje treść bez przerwania muzyki i czy po 5 sekundach
    wracają metadane Spotify.
 
-Jeśli komunikat „Test połączenia” pojawia się po naciśnięciu START, ale
+Jeśli komunikat powitalny pojawia się po naciśnięciu START, ale
 wiadomość nie, należy sprawdzić status „Ostatnio” w aplikacji. Pozwala
 to rozróżnić problem powiadomień od problemu sesji Bluetooth.
 

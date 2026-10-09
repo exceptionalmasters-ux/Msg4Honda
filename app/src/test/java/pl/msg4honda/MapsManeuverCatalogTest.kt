@@ -13,5 +13,7 @@ class MapsManeuverCatalogTest {
         assertEquals("Trzymaj się prawej strony", MapsManeuverCatalog.forHash("16b3d20d3121"))
         assertEquals("Na rondzie prosto drugi zjazd", MapsManeuverCatalog.forHash("379ecb532d61"))
         assertEquals("Trzymaj się lewej strony", MapsManeuverCatalog.forHash("4f848ba4ede4"))
+        assertEquals("Zjedź w lewo", MapsManeuverCatalog.forHash("03af5ed5cb9f"))
+        assertEquals("Dalej prosto", MapsManeuverCatalog.forHash("6573cfaa1b6a"))
     }
 }

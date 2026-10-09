@@ -5,6 +5,22 @@ import org.junit.Test
 
 class MessageFormattingTest {
     @Test
+    fun `formats welcome with enabled sources`() {
+        val result = MessageFormatter.welcome(listOf("Whats", "Mess", "SMS", "Maps"))
+
+        assertEquals("Msg4Honda", result.title)
+        assertEquals("Witaj :)", result.messageLine1)
+        assertEquals("Whats, Mess, SMS, Maps", result.messageLine2)
+    }
+
+    @Test
+    fun `formats welcome when every source is disabled`() {
+        val result = MessageFormatter.welcome(emptyList())
+
+        assertEquals("Brak źródeł", result.messageLine2)
+    }
+
+    @Test
     fun `puts sender and WhatsApp in title`() {
         val result = MessageFormatter.format("Jan", "Cześć!")
 

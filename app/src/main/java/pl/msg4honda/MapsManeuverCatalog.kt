@@ -15,6 +15,8 @@ object MapsManeuverCatalog {
         "16b3d20d3121" to "Trzymaj się prawej strony",
         "379ecb532d61" to "Na rondzie prosto drugi zjazd",
         "4f848ba4ede4" to "Trzymaj się lewej strony",
+        "03af5ed5cb9f" to "Zjedź w lewo",
+        "6573cfaa1b6a" to "Dalej prosto",
     )
 
     fun forHash(hash: String?): String? = hash?.let(maneuvers::get)

@@ -54,7 +54,7 @@ class MainActivity : Activity() {
                 MessageDisplayCoordinator.stop(this)
                 renderState()
             } else if (hasNotificationAccess()) {
-                enableAndTest()
+                enableAndWelcome()
             } else {
                 waitingForPermission = true
                 startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
@@ -70,7 +70,7 @@ class MainActivity : Activity() {
         super.onResume()
         if (waitingForPermission && hasNotificationAccess()) {
             waitingForPermission = false
-            enableAndTest()
+            enableAndWelcome()
         }
         renderState()
     }
@@ -110,15 +110,19 @@ class MainActivity : Activity() {
             }
     }
 
-    private fun enableAndTest() {
+    private fun enableAndWelcome() {
         AppState.setEnabled(this, true)
-        AppState.setLastEvent(this, getString(R.string.test_sent))
-        MessageDisplayCoordinator.enqueue(
+        AppState.setLastEvent(this, getString(R.string.welcome_sent))
+        val enabledSources = listOf(
+            MessageSource.WHATSAPP to "Whats",
+            MessageSource.MESSENGER to "Mess",
+            MessageSource.SMS to "SMS",
+            MessageSource.MAPS to "Maps",
+        ).filter { (source, _) -> AppState.isSourceEnabled(this, source) }
+            .map { (_, shortName) -> shortName }
+        MessageDisplayCoordinator.showWelcome(
             context = this,
-            notificationKey = "test-${System.currentTimeMillis()}",
-            sender = "Msg4Honda",
-            message = "Test połączenia",
-            source = "Test",
+            welcome = MessageFormatter.welcome(enabledSources),
         )
         renderState()
     }

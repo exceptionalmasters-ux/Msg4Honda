@@ -13,6 +13,12 @@ object MessageFormatter {
     fun format(sender: String, message: String, source: String = "WhatsApp"): HondaDisplayText =
         formatPages(sender, message, source).first()
 
+    fun welcome(enabledSources: List<String>): HondaDisplayText = HondaDisplayText(
+        title = "Msg4Honda",
+        messageLine1 = "Witaj :)",
+        messageLine2 = enabledSources.joinToString(", ").ifBlank { "Brak źródeł" }.take(LINE_LENGTH),
+    )
+
     fun formatPages(
         sender: String,
         message: String,

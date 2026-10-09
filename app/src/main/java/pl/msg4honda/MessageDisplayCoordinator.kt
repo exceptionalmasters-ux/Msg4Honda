@@ -47,6 +47,12 @@ object MessageDisplayCoordinator {
     }
 
     @Synchronized
+    fun showWelcome(context: Context, welcome: HondaDisplayText) {
+        if (!AppState.isEnabled(context)) return
+        handler.post { activateWelcome(context.applicationContext, welcome) }
+    }
+
+    @Synchronized
     fun showRoadEvent(context: Context, roadEvent: String) {
         if (!AppState.isEnabled(context)) return
         handler.post { activateRoadEvent(roadEvent) }
@@ -74,6 +80,18 @@ object MessageDisplayCoordinator {
             currentNavigation = null
             getSession(context).showMessage(pages[currentPage])
         }
+        scheduleMessageAction()
+    }
+
+    @Synchronized
+    private fun activateWelcome(context: Context, welcome: HondaDisplayText) {
+        if (!AppState.isEnabled(context)) return
+        pages.clear()
+        pages += welcome
+        currentPage = 0
+        displayKind = DisplayKind.MESSAGES
+        currentNavigation = null
+        getSession(context).showMessage(welcome)
         scheduleMessageAction()
     }
 
