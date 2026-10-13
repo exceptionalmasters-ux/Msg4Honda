@@ -138,6 +138,41 @@ class MapsNotificationParserTest {
     }
 
     @Test
+    fun `unknown icon clears stale maneuver but keeps current distance`() {
+        val previous = MapsNotificationParser.parse(
+            rawValues = listOf("8 min · 4 km", "300 m", "Cechowa"),
+            iconManeuver = "Skręć w prawo",
+            hasDirectionIcon = true,
+        )!!
+
+        val result = MapsNotificationParser.parse(
+            rawValues = listOf("7 min · 3,8 km", "120 m", "Łużycka"),
+            previous = previous,
+            iconManeuver = null,
+            hasDirectionIcon = true,
+        )!!
+
+        assertEquals("120m", result.messageLine1)
+        assertEquals("Łużycka", result.messageLine2)
+    }
+
+    @Test
+    fun `distance update without a direction icon still preserves known maneuver`() {
+        val previous = MapsNotificationParser.parse(
+            rawValues = listOf("8 min · 4 km", "300 m", "Cechowa"),
+            iconManeuver = "Skręć w prawo",
+        )!!
+
+        val result = MapsNotificationParser.parse(
+            rawValues = listOf("7 min · 3,8 km", "120 m"),
+            previous = previous,
+            hasDirectionIcon = false,
+        )!!
+
+        assertEquals("->Skręć w prawo-120m", result.messageLine1)
+    }
+
+    @Test
     fun `road event replaces street in third radio line`() {
         val result = MapsNotificationParser.parse(
             rawValues = listOf("10 min · 3 km", "300 m", "Zakopiańska"),

@@ -80,11 +80,11 @@ class HondaMediaSession(
                 // are intentionally opposite to their visual line numbers.
                 .putString(
                     MediaMetadata.METADATA_KEY_ALBUM,
-                    displayText.messageLine1.ifBlank { "-" },
+                    displayText.messageLine1.ifEmpty { EMPTY_RADIO_FIELD },
                 )
                 .putString(
                     MediaMetadata.METADATA_KEY_ARTIST,
-                    displayText.messageLine2.ifBlank { "-" },
+                    displayText.messageLine2.ifEmpty { EMPTY_RADIO_FIELD },
                 )
                 .build(),
         )

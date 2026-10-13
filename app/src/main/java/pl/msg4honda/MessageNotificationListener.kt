@@ -81,6 +81,7 @@ class MessageNotificationListener : NotificationListenerService() {
             rawValues = values,
             previous = lastNavigation,
             iconManeuver = diagnostics.maneuver,
+            hasDirectionIcon = diagnostics.hasDirectionIcon,
             speedLimit = AppState.speedLimit(this),
             roadEvent = AppState.roadEvent(this),
         ).also {

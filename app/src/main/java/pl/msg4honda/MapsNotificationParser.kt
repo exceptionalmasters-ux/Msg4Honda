@@ -40,6 +40,7 @@ object MapsNotificationParser {
         rawValues: List<String>,
         previous: HondaDisplayText? = null,
         iconManeuver: String? = null,
+        hasDirectionIcon: Boolean = false,
         speedLimit: Int? = null,
         roadEvent: String? = null,
     ): HondaDisplayText? {
@@ -61,8 +62,10 @@ object MapsNotificationParser {
         val remainingDistance = values.firstNotNullOfOrNull { value ->
             if (durationRegex.containsMatchIn(value)) distanceRegex.find(value)?.value else null
         }?.takeIf(::containsPositiveNumber)
-        val maneuverText = values.firstOrNull { maneuverRegex.containsMatchIn(it) }
-            ?: iconManeuver
+        val textManeuver = values.firstOrNull { maneuverRegex.containsMatchIn(it) }
+        val hasUnknownIconManeuver =
+            textManeuver == null && hasDirectionIcon && iconManeuver == null
+        val maneuverText = textManeuver ?: iconManeuver
         val distance = (maneuverText?.let { distanceRegex.find(it)?.value }
             ?: values.firstNotNullOfOrNull { value ->
                 if (durationRegex.containsMatchIn(value)) null else distanceRegex.find(value)?.value
@@ -111,19 +114,26 @@ object MapsNotificationParser {
             .orEmpty()
         val target = roadEvent?.takeIf(MapsRoadEventReader::isKnownLabel)
             ?: newTarget.ifBlank { previousTarget }
-        val instruction = if (action.isNotBlank()) {
-            formatInstruction(withArrow(action), distance)
+        val instruction = when {
+            action.isNotBlank() -> formatInstruction(withArrow(action), distance)
+            hasUnknownIconManeuver -> distance?.let(::compactDistance).orEmpty()
+            else -> {
+                val previousAction = previous?.messageLine1
+                    ?.replace(oldDistanceSuffixRegex, "")
+                    .orEmpty()
+                formatInstruction(previousAction, distance)
+                    .ifBlank { previous?.messageLine1.orEmpty() }
+            }
+        }
+        val instructionLine = if (hasUnknownIconManeuver) {
+            instruction
         } else {
-            val previousAction = previous?.messageLine1
-                ?.replace(oldDistanceSuffixRegex, "")
-                .orEmpty()
-            formatInstruction(previousAction, distance)
-                .ifBlank { previous?.messageLine1.orEmpty() }
+            instruction.ifBlank { "Nawigacja" }
         }
 
         return HondaDisplayText(
             title = title,
-            messageLine1 = instruction.ifBlank { "Nawigacja" }.take(LINE_LENGTH),
+            messageLine1 = instructionLine.take(LINE_LENGTH),
             messageLine2 = target.take(LINE_LENGTH),
         )
     }

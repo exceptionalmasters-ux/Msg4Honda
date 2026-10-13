@@ -25,6 +25,7 @@ object MapsNotificationDiagnostics {
     data class Result(
         val text: String,
         val maneuver: String?,
+        val hasDirectionIcon: Boolean,
     )
 
     fun create(context: Context, sbn: StatusBarNotification): Result {
@@ -66,6 +67,7 @@ object MapsNotificationDiagnostics {
         return Result(
             text = output.toString().take(MAX_DUMP_LENGTH),
             maneuver = maneuver,
+            hasDirectionIcon = directionHash != null,
         )
     }
 
