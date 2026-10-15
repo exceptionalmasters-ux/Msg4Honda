@@ -5,7 +5,12 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 
 class MessageNotificationListener : NotificationListenerService() {
+    companion object {
+        private const val MAPS_DIAGNOSTIC_INTERVAL_MS = 5_000L
+    }
+
     private var lastNavigation: HondaDisplayText? = null
+    private var lastMapsDiagnosticAt = 0L
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (!AppState.isEnabled(this)) return
@@ -49,8 +54,17 @@ class MessageNotificationListener : NotificationListenerService() {
     }
 
     private fun handleMapsNotification(sbn: StatusBarNotification) {
-        val diagnostics = MapsNotificationDiagnostics.create(this, sbn)
-        AppState.setMapsDebug(this, diagnostics.text)
+        val now = System.currentTimeMillis()
+        val captureDiagnostics = now - lastMapsDiagnosticAt >= MAPS_DIAGNOSTIC_INTERVAL_MS
+        val diagnostics = MapsNotificationDiagnostics.create(
+            context = this,
+            sbn = sbn,
+            includeDiagnosticDump = captureDiagnostics,
+        )
+        if (captureDiagnostics && diagnostics.text.isNotBlank()) {
+            lastMapsDiagnosticAt = now
+            AppState.setMapsDebug(this, diagnostics.text)
+        }
         val extras = sbn.notification.extras
         val values = buildList {
             addAll(listOfNotNull(
@@ -76,7 +90,9 @@ class MessageNotificationListener : NotificationListenerService() {
             }
         }.map(String::trim).filter(String::isNotBlank).distinct()
 
-        AppState.setLastEvent(this, "Maps: ${values.joinToString(" | ").take(180)}")
+        if (captureDiagnostics) {
+            AppState.setLastEvent(this, "Maps: ${values.joinToString(" | ").take(180)}")
+        }
         val navigation = MapsNotificationParser.parse(
             rawValues = values,
             previous = lastNavigation,

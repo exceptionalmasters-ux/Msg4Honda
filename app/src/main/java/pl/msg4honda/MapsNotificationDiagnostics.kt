@@ -28,7 +28,20 @@ object MapsNotificationDiagnostics {
         val hasDirectionIcon: Boolean,
     )
 
-    fun create(context: Context, sbn: StatusBarNotification): Result {
+    fun create(
+        context: Context,
+        sbn: StatusBarNotification,
+        includeDiagnosticDump: Boolean = true,
+    ): Result {
+        if (!includeDiagnosticDump) {
+            val directionHash = findDirectionHash(context, sbn)
+            return Result(
+                text = "",
+                maneuver = MapsManeuverCatalog.forHash(directionHash),
+                hasDirectionIcon = directionHash != null,
+            )
+        }
+
         val notification = sbn.notification
         val output = StringBuilder()
 
@@ -69,6 +82,51 @@ object MapsNotificationDiagnostics {
             maneuver = maneuver,
             hasDirectionIcon = directionHash != null,
         )
+    }
+
+    private fun findDirectionHash(
+        context: Context,
+        sbn: StatusBarNotification,
+    ): String? {
+        val sourceContext = runCatching {
+            context.createPackageContext(sbn.packageName, Context.CONTEXT_IGNORE_SECURITY)
+        }.getOrNull() ?: return null
+        val notification = sbn.notification
+        val candidates = listOf<() -> RemoteViews?>(
+            {
+                Notification.Builder.recoverBuilder(context, notification).createBigContentView()
+            },
+            { notification.bigContentView },
+            {
+                Notification.Builder.recoverBuilder(context, notification).createContentView()
+            },
+            { notification.contentView },
+        )
+        for (candidate in candidates) {
+            val remoteViews = runCatching(candidate).getOrNull() ?: continue
+            val root = runCatching {
+                remoteViews.apply(sourceContext, FrameLayout(sourceContext))
+            }.getOrNull() ?: continue
+            findRightIconHash(sourceContext, root)?.let { return it }
+        }
+        return null
+    }
+
+    private fun findRightIconHash(context: Context, view: View): String? {
+        val idName = if (view.id > 0) {
+            runCatching { context.resources.getResourceEntryName(view.id) }.getOrNull()
+        } else {
+            null
+        }
+        if (view is ImageView && idName == "right_icon") {
+            return (view.drawable as? BitmapDrawable)?.bitmap?.let(::bitmapFingerprint)
+        }
+        if (view is ViewGroup) {
+            for (index in 0 until view.childCount) {
+                findRightIconHash(context, view.getChildAt(index))?.let { return it }
+            }
+        }
+        return null
     }
 
     private fun appendRemoteViews(

@@ -14,6 +14,7 @@ object MessageDisplayCoordinator {
     private enum class DisplayKind { MESSAGES, NAVIGATION }
 
     private val handler = Handler(Looper.getMainLooper())
+    private val navigationPolicy = NavigationDisplayPolicy()
     private val pages = mutableListOf<HondaDisplayText>()
     private val recentKeys = LinkedHashSet<String>()
     private var currentPage = 0
@@ -65,6 +66,7 @@ object MessageDisplayCoordinator {
         currentPage = 0
         displayKind = null
         currentNavigation = null
+        navigationPolicy.reset()
         mediaSession?.hide()
         mediaSession?.release()
         mediaSession = null
@@ -75,6 +77,7 @@ object MessageDisplayCoordinator {
         if (pages.isEmpty() || !AppState.isEnabled(context)) return
 
         if (displayKind != DisplayKind.MESSAGES) {
+            if (displayKind == DisplayKind.NAVIGATION) navigationPolicy.hideCurrent()
             currentPage = 0
             displayKind = DisplayKind.MESSAGES
             currentNavigation = null
@@ -91,6 +94,7 @@ object MessageDisplayCoordinator {
         currentPage = 0
         displayKind = DisplayKind.MESSAGES
         currentNavigation = null
+        navigationPolicy.reset()
         getSession(context).showMessage(welcome)
         scheduleMessageAction()
     }
@@ -99,25 +103,25 @@ object MessageDisplayCoordinator {
     private fun activateNavigation(context: Context, navigation: HondaDisplayText) {
         if (!AppState.isEnabled(context) || pages.isNotEmpty()) return
 
+        val decision = navigationPolicy.evaluate(navigation)
+        if (!decision.shouldDisplay) return
+
         displayKind = DisplayKind.NAVIGATION
         currentNavigation = navigation
         getSession(context).showMessage(navigation)
-        cancelPendingAction()
-        pendingAction = Runnable { expireNavigation() }.also {
-            handler.postDelayed(it, NAVIGATION_TIME_MS)
-        }
+        if (decision.restartTimeout) scheduleNavigationExpiry()
     }
 
     @Synchronized
     private fun activateRoadEvent(roadEvent: String) {
         if (displayKind != DisplayKind.NAVIGATION) return
         val navigation = currentNavigation?.copy(messageLine2 = roadEvent.take(24)) ?: return
+        val decision = navigationPolicy.evaluate(navigation)
+        if (!decision.shouldDisplay) return
+
         currentNavigation = navigation
         mediaSession?.showMessage(navigation)
-        cancelPendingAction()
-        pendingAction = Runnable { expireNavigation() }.also {
-            handler.postDelayed(it, NAVIGATION_TIME_MS)
-        }
+        if (decision.restartTimeout) scheduleNavigationExpiry()
     }
 
     private fun getSession(context: Context): HondaMediaSession =
@@ -173,6 +177,7 @@ object MessageDisplayCoordinator {
         if (displayKind != DisplayKind.NAVIGATION) return
 
         cancelPendingAction()
+        navigationPolicy.hideCurrent()
         displayKind = null
         currentNavigation = null
         mediaSession?.hide()
@@ -214,9 +219,17 @@ object MessageDisplayCoordinator {
     private fun expireNavigation() {
         cancelPendingAction()
         if (displayKind == DisplayKind.NAVIGATION) {
+            navigationPolicy.hideCurrent()
             displayKind = null
             currentNavigation = null
             mediaSession?.hide()
+        }
+    }
+
+    private fun scheduleNavigationExpiry() {
+        cancelPendingAction()
+        pendingAction = Runnable { expireNavigation() }.also {
+            handler.postDelayed(it, NAVIGATION_TIME_MS)
         }
     }
 

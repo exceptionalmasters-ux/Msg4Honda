@@ -70,7 +70,6 @@ class HondaMediaSession(
 
     fun showMessage(displayText: HondaDisplayText) {
         stateGeneration += 1
-        stopSilentPlayback()
 
         session.isActive = true
         session.setMetadata(
@@ -139,6 +138,8 @@ class HondaMediaSession(
     }
 
     private fun startSilentPlayback() {
+        if (silentTrack != null) return
+
         val sampleRate = 8_000
         val channel = AudioFormat.CHANNEL_OUT_MONO
         val encoding = AudioFormat.ENCODING_PCM_16BIT

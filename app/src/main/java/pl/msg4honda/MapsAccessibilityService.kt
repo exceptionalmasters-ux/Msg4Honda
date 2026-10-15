@@ -12,11 +12,14 @@ class MapsAccessibilityService : AccessibilityService() {
         private const val MAPS_PACKAGE = "com.google.android.apps.maps"
         private const val MAX_NODES = 300
         private const val UPDATE_DELAY_MS = 250L
+        private const val DEBUG_WRITE_INTERVAL_MS = 5_000L
     }
 
     private val handler = Handler(Looper.getMainLooper())
     private val update = Runnable { inspectMapsWindow() }
     private val recentEvents = ArrayDeque<String>()
+    private var lastWindowDebugAt = 0L
+    private var lastEventDebugAt = 0L
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.packageName?.toString() != MAPS_PACKAGE) return
@@ -38,18 +41,22 @@ class MapsAccessibilityService : AccessibilityService() {
         val nodes = readNodeTree(root)
         val speedLimit = MapsSpeedLimitReader.find(nodes)
         val roadEvent = MapsRoadEventReader.find(nodes.flatMap(::nodeValues))
-        AppState.setMapsAccessibilityDebug(
-            this,
-            buildString {
-                appendLine("rozpoznaneOgraniczenie=${speedLimit?.let { "$it km/h" } ?: "brak"}")
-                appendLine("rozpoznaneZdarzenie=${roadEvent ?: "brak"}")
-                nodes.forEach { node ->
-                    append("id=${node.viewId ?: "-"}")
-                    append(" text=${node.text ?: "-"}")
-                    appendLine(" opis=${node.contentDescription ?: "-"}")
-                }
-            }.take(30_000),
-        )
+        val now = System.currentTimeMillis()
+        if (now - lastWindowDebugAt >= DEBUG_WRITE_INTERVAL_MS) {
+            lastWindowDebugAt = now
+            AppState.setMapsAccessibilityDebug(
+                this,
+                buildString {
+                    appendLine("rozpoznaneOgraniczenie=${speedLimit?.let { "$it km/h" } ?: "brak"}")
+                    appendLine("rozpoznaneZdarzenie=${roadEvent ?: "brak"}")
+                    nodes.forEach { node ->
+                        append("id=${node.viewId ?: "-"}")
+                        append(" text=${node.text ?: "-"}")
+                        appendLine(" opis=${node.contentDescription ?: "-"}")
+                    }
+                }.take(30_000),
+            )
+        }
         if (speedLimit != null) AppState.setSpeedLimit(this, speedLimit)
         roadEvent?.let(::handleRoadEvent)
     }
@@ -71,7 +78,11 @@ class MapsAccessibilityService : AccessibilityService() {
             append(roadEvent ?: "brak")
         }
         while (recentEvents.size > 40) recentEvents.removeFirst()
-        AppState.setMapsAccessibilityEventDebug(this, recentEvents.joinToString("\n"))
+        val now = System.currentTimeMillis()
+        if (now - lastEventDebugAt >= DEBUG_WRITE_INTERVAL_MS) {
+            lastEventDebugAt = now
+            AppState.setMapsAccessibilityEventDebug(this, recentEvents.joinToString("\n"))
+        }
         roadEvent?.let(::handleRoadEvent)
     }
 

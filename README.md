@@ -35,6 +35,14 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
   oraz ulicę/kierunek;
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki
+- aktualizacje odległości odświeżają widok tylko w bieżącym 5-sekundowym oknie;
+  nie przedłużają czasu przejęcia ekranu, a ten sam manewr po wygaszeniu lub
+  ręcznym zamknięciu pozostaje ukryty do czasu pojawienia się nowej wskazówki
+- ciężki zrzut diagnostyczny i zapis danych dostępności są ograniczone do
+  jednego wykonania na 5 sekund; rozpoznawanie manewrów nadal działa na każdej
+  aktualizacji
+- bezgłośny AudioTrack jest współdzielony przez kolejne aktualizacje metadanych
+  i zwalniany dopiero przy oddaniu sesji Spotify
 - pierwszy wiersz Map ma zwarty format bez zbędnych spacji, np.
   `3.1km-10min`
 - opcjonalna usługa dostępności obserwuje wyłącznie ekran Google Maps i próbuje
@@ -82,3 +90,11 @@ to rozróżnić problem powiadomień od problemu sesji Bluetooth.
 
 To jest eksperymentalny MVP. Priorytet sesji multimedialnej i sposób
 wyświetlania AVRCP zależą od oprogramowania telefonu i radia.
+
+
+## Punkt powrotu
+
+Wersja sprzed optymalizacji stabilności jest zachowana na gałęzi
+`backup-v0.3.10-before-stability` (commit
+`c2d75375af8a3c5192ac64a58163f0c55d18feb9`). Zmiany 1–5 są celowo
+zgrupowane w jednym kolejnym commicie, dzięki czemu można je łatwo wycofać.
