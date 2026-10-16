@@ -27,8 +27,12 @@ internal class NavigationDisplayPolicy {
         )
     }
 
-    fun hideCurrent() {
+    fun dismissCurrent() {
         hiddenKey = visibleKey
+        visibleKey = null
+    }
+
+    fun expireCurrent() {
         visibleKey = null
     }
 

@@ -77,7 +77,7 @@ object MessageDisplayCoordinator {
         if (pages.isEmpty() || !AppState.isEnabled(context)) return
 
         if (displayKind != DisplayKind.MESSAGES) {
-            if (displayKind == DisplayKind.NAVIGATION) navigationPolicy.hideCurrent()
+            if (displayKind == DisplayKind.NAVIGATION) navigationPolicy.expireCurrent()
             currentPage = 0
             displayKind = DisplayKind.MESSAGES
             currentNavigation = null
@@ -177,7 +177,7 @@ object MessageDisplayCoordinator {
         if (displayKind != DisplayKind.NAVIGATION) return
 
         cancelPendingAction()
-        navigationPolicy.hideCurrent()
+        navigationPolicy.dismissCurrent()
         displayKind = null
         currentNavigation = null
         mediaSession?.hide()
@@ -219,7 +219,7 @@ object MessageDisplayCoordinator {
     private fun expireNavigation() {
         cancelPendingAction()
         if (displayKind == DisplayKind.NAVIGATION) {
-            navigationPolicy.hideCurrent()
+            navigationPolicy.expireCurrent()
             displayKind = null
             currentNavigation = null
             mediaSession?.hide()

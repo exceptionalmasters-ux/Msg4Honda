@@ -33,7 +33,7 @@ class NavigationDisplayPolicyTest {
     fun `hidden maneuver stays hidden until instruction changes`() {
         val policy = NavigationDisplayPolicy()
         policy.evaluate(navigation("->Skręć w prawo-300m", "Cechowa"))
-        policy.hideCurrent()
+        policy.dismissCurrent()
 
         val same = policy.evaluate(navigation("->Skręć w prawo-120m", "Cechowa"))
         val next = policy.evaluate(navigation("^Jedź prosto-1km", "Zakopiańska"))
@@ -41,6 +41,18 @@ class NavigationDisplayPolicyTest {
         assertFalse(same.shouldDisplay)
         assertTrue(next.shouldDisplay)
         assertTrue(next.restartTimeout)
+    }
+
+    @Test
+    fun `automatically expired maneuver may be displayed again`() {
+        val policy = NavigationDisplayPolicy()
+        policy.evaluate(navigation("->Skręć w prawo-300m", "Cechowa"))
+        policy.expireCurrent()
+
+        val same = policy.evaluate(navigation("->Skręć w prawo-120m", "Cechowa"))
+
+        assertTrue(same.shouldDisplay)
+        assertTrue(same.restartTimeout)
     }
 
     @Test
