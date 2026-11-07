@@ -2,6 +2,7 @@ package pl.msg4honda
 
 object MapsNotificationParser {
     private const val LINE_LENGTH = 24
+    private const val DISTANCE_FIELD_LENGTH = 5
 
     private val durationRegex = Regex(
         "(?:\\d+\\s*h\\s*)?\\d+\\s*min|\\d+\\s*(?:h|godz\\.?)(?:\\s*\\d+\\s*min)?",
@@ -147,8 +148,9 @@ object MapsNotificationParser {
 
     private fun formatInstruction(action: String, distance: String?): String {
         val compactDistance = distance?.let(::compactDistance) ?: return action.take(LINE_LENGTH)
-        val suffix = "-$compactDistance"
-        return action.take((LINE_LENGTH - suffix.length).coerceAtLeast(0)) + suffix
+        val reservedDistanceLength = maxOf(DISTANCE_FIELD_LENGTH, compactDistance.length)
+        val actionLength = (LINE_LENGTH - 1 - reservedDistanceLength).coerceAtLeast(0)
+        return action.take(actionLength) + "-$compactDistance"
     }
 
     private fun compactDistance(value: String): String = value

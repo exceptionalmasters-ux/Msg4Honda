@@ -11,8 +11,8 @@ android {
         applicationId = "pl.msg4honda"
         minSdk = 26
         targetSdk = 35
-        versionCode = 20
-        versionName = "0.3.12"
+        versionCode = 21
+        versionName = "0.3.13"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

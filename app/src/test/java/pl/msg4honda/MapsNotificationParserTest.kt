@@ -1,6 +1,7 @@
 package pl.msg4honda
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MapsNotificationParserTest {
@@ -170,6 +171,29 @@ class MapsNotificationParserTest {
         )!!
 
         assertEquals("->Skręć w prawo-120m", result.messageLine1)
+    }
+
+    @Test
+    fun `reserves five characters for complete maneuver distance`() {
+        val shortDistance = MapsNotificationParser.parse(
+            rawValues = listOf("10 min", "80 m", "Cechowa"),
+            iconManeuver = "Na rondzie pierwszy zjazd na wprost",
+        )!!
+        val maxKilometers = MapsNotificationParser.parse(
+            rawValues = listOf("10 min", "999 km", "Cechowa"),
+            iconManeuver = "Na rondzie pierwszy zjazd na wprost",
+        )!!
+        val fourDigitMeters = MapsNotificationParser.parse(
+            rawValues = listOf("10 min", "2000 m", "Cechowa"),
+            iconManeuver = "Na rondzie pierwszy zjazd na wprost",
+        )!!
+
+        assertTrue(shortDistance.messageLine1.endsWith("-80m"))
+        assertTrue(shortDistance.messageLine1.substringBeforeLast("-").length <= 18)
+        assertTrue(maxKilometers.messageLine1.endsWith("-999km"))
+        assertEquals(24, maxKilometers.messageLine1.length)
+        assertTrue(fourDigitMeters.messageLine1.endsWith("-2000m"))
+        assertEquals(24, fourDigitMeters.messageLine1.length)
     }
 
     @Test

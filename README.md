@@ -33,7 +33,8 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
   zawracania, rond, kontynuowania tą samą trasą i trzymania się prawej strony,
   bez zmiany parsera ulic i odległości
 - wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
-  oraz ulicę/kierunek;
+  oraz ulicę/kierunek; w drugim wierszu pięć znaków jest zawsze zarezerwowanych
+  na pełną odległość (np. `999km` lub `2000m`), kosztem skrócenia manewru;
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki
 - aktualizacje odległości odświeżają widok tylko w bieżącym 5-sekundowym oknie
   i nie przedłużają czasu przejęcia ekranu; po automatycznym wygaśnięciu ten sam
@@ -101,3 +102,5 @@ Wersja sprzed optymalizacji stabilności jest zachowana na gałęzi
 zgrupowane w jednym kolejnym commicie, dzięki czemu można je łatwo wycofać.
 
 Wersja 0.3.11 pozostaje dostępna na gałęzi `backup-v0.3.11-stability`.
+
+Wersja 0.3.12 pozostaje dostępna na gałęzi `backup-v0.3.12-distance-field`.
