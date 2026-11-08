@@ -11,7 +11,7 @@ object MapsManeuverCatalog {
         "82b7be5f4234" to "Na rondzie drugi zjazd",
         "7cc5e0c621dd" to "Na rondzie pierwszy zjazd na wprost",
         "f671359b7204" to "Na rondzie w lewo",
-        "d9543a7b04df" to "Jedź prosto tą samą trasą",
+        "d9543a7b04df" to "Jedź prosto drog",
         "16b3d20d3121" to "Trzymaj się prawej strony",
         "379ecb532d61" to "Na rondzie prosto drugi zjazd",
         "4f848ba4ede4" to "Trzymaj się lewej strony",

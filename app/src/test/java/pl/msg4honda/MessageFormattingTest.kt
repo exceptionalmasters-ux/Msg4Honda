@@ -58,9 +58,9 @@ class MessageFormattingTest {
         val result = MessageFormatter.formatPages("Jan", "a".repeat(80))
 
         assertEquals(2, result.size)
-        assertEquals(24, result[0].messageLine1.length)
-        assertEquals(24, result[0].messageLine2.length)
-        assertEquals(24, result[1].messageLine1.length)
-        assertEquals(8, result[1].messageLine2.length)
+        assertEquals(23, result[0].messageLine1.length)
+        assertEquals(23, result[0].messageLine2.length)
+        assertEquals(23, result[1].messageLine1.length)
+        assertEquals(11, result[1].messageLine2.length)
     }
 }

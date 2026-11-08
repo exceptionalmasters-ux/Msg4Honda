@@ -11,7 +11,7 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
 - źródło muzyki: Spotify
 - jeden przycisk START/STOP
 - osobne przełączniki WhatsApp, Messenger, SMS/RCS i Google Maps
-- wiadomości są dzielone na dwuliniowe strony po 48 znaków
+- wiadomości są dzielone na dwuliniowe strony po 46 znaków
 - kolejne strony pojawiają się automatycznie co 2 sekundy
 - przyciski następny/poprzedni przewijają strony wiadomości z komunikatorów
 - przy wskazówce Google Maps przycisk zamyka ją i przekazuje zmianę utworu
@@ -33,8 +33,9 @@ Pierwsza linia zawiera nadawcę i nazwę źródła, a treść zajmuje dwie kolej
   zawracania, rond, kontynuowania tą samą trasą i trzymania się prawej strony,
   bez zmiany parsera ulic i odległości
 - wskazówki Map pokazują czas dojazdu, manewr ze strzałką ASCII i odległością
-  oraz ulicę/kierunek; w drugim wierszu pięć znaków jest zawsze zarezerwowanych
-  na pełną odległość (np. `999km` lub `2000m`), kosztem skrócenia manewru;
+  oraz ulicę/kierunek; drugi i trzeci wiersz mają limit 23 znaków, a w wierszu
+  manewru pięć znaków jest zawsze zarezerwowanych na pełną odległość
+  (np. `999km` lub `2000m`), kosztem skrócenia manewru do 17 znaków;
   nowsza wskazówka zastępuje poprzednią i nie trafia do kolejki
 - aktualizacje odległości odświeżają widok tylko w bieżącym 5-sekundowym oknie
   i nie przedłużają czasu przejęcia ekranu; po automatycznym wygaśnięciu ten sam
@@ -104,3 +105,5 @@ zgrupowane w jednym kolejnym commicie, dzięki czemu można je łatwo wycofać.
 Wersja 0.3.11 pozostaje dostępna na gałęzi `backup-v0.3.11-stability`.
 
 Wersja 0.3.12 pozostaje dostępna na gałęzi `backup-v0.3.12-distance-field`.
+
+Wersja 0.3.13 pozostaje dostępna na gałęzi `backup-v0.3.13-before-23-char-limit`.

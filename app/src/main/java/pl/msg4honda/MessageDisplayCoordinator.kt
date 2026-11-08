@@ -115,7 +115,7 @@ object MessageDisplayCoordinator {
     @Synchronized
     private fun activateRoadEvent(roadEvent: String) {
         if (displayKind != DisplayKind.NAVIGATION) return
-        val navigation = currentNavigation?.copy(messageLine2 = roadEvent.take(24)) ?: return
+        val navigation = currentNavigation?.copy(messageLine2 = roadEvent.take(23)) ?: return
         val decision = navigationPolicy.evaluate(navigation)
         if (!decision.shouldDisplay) return
 

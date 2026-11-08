@@ -7,7 +7,7 @@ data class HondaDisplayText(
 )
 
 object MessageFormatter {
-    private const val LINE_LENGTH = 24
+    private const val LINE_LENGTH = 23
     private const val TITLE_LENGTH = 32
 
     fun format(sender: String, message: String, source: String = "WhatsApp"): HondaDisplayText =

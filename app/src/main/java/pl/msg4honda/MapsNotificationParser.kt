@@ -1,7 +1,7 @@
 package pl.msg4honda
 
 object MapsNotificationParser {
-    private const val LINE_LENGTH = 24
+    private const val LINE_LENGTH = 23
     private const val DISTANCE_FIELD_LENGTH = 5
 
     private val durationRegex = Regex(

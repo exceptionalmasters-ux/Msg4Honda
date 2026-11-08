@@ -189,11 +189,11 @@ class MapsNotificationParserTest {
         )!!
 
         assertTrue(shortDistance.messageLine1.endsWith("-80m"))
-        assertTrue(shortDistance.messageLine1.substringBeforeLast("-").length <= 18)
+        assertTrue(shortDistance.messageLine1.substringBeforeLast("-").length <= 17)
         assertTrue(maxKilometers.messageLine1.endsWith("-999km"))
-        assertEquals(24, maxKilometers.messageLine1.length)
+        assertEquals(23, maxKilometers.messageLine1.length)
         assertTrue(fourDigitMeters.messageLine1.endsWith("-2000m"))
-        assertEquals(24, fourDigitMeters.messageLine1.length)
+        assertEquals(23, fourDigitMeters.messageLine1.length)
     }
 
     @Test
