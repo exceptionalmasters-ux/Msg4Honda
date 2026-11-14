@@ -54,7 +54,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: Msg4Honda-0.3.15-signed
+          name: Msg4Honda-0.3.16-signed
           path: |
             app/build/outputs/apk/release/app-release.apk
             signing-report.txt

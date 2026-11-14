@@ -130,6 +130,12 @@ class HondaMediaSession(
         session.release()
     }
 
+    fun skipSpotifyNext() {
+        mainHandler.post {
+            spotifyController()?.transportControls?.skipToNext()
+        }
+    }
+
     fun forwardMediaKey(keyCode: Int) {
         mainHandler.postDelayed({
             audioManager.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, keyCode))
@@ -173,11 +179,14 @@ class HondaMediaSession(
         silentTrack = null
     }
 
-    private fun spotifySnapshot(): SpotifySnapshot? = runCatching {
+    private fun spotifyController() = runCatching {
         val listener = ComponentName(applicationContext, MessageNotificationListener::class.java)
-        val controller = mediaSessionManager.getActiveSessions(listener)
+        mediaSessionManager.getActiveSessions(listener)
             .firstOrNull { it.packageName == SPOTIFY_PACKAGE }
-            ?: return@runCatching null
+    }.getOrNull()
+
+    private fun spotifySnapshot(): SpotifySnapshot? = runCatching {
+        val controller = spotifyController() ?: return@runCatching null
         val source = controller.metadata ?: return@runCatching null
         val title = source.getString(MediaMetadata.METADATA_KEY_TITLE)
             ?.takeIf(String::isNotBlank)

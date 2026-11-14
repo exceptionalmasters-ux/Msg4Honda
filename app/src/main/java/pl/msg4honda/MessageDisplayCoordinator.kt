@@ -3,24 +3,26 @@ package pl.msg4honda
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.view.KeyEvent
 
 object MessageDisplayCoordinator {
     private const val AUTO_ADVANCE_MS = 2_000L
     private const val LAST_PAGE_TIME_MS = 5_000L
     private const val NAVIGATION_TIME_MS = 5_000L
     private const val MAX_RECENT_KEYS = 100
+    private const val MAX_MESSAGE_HISTORY = 20
 
     private enum class DisplayKind { MESSAGES, NAVIGATION }
 
     private val handler = Handler(Looper.getMainLooper())
     private val navigationPolicy = NavigationDisplayPolicy()
     private val pages = mutableListOf<HondaDisplayText>()
+    private val messageHistory = mutableListOf<List<HondaDisplayText>>()
     private val recentKeys = LinkedHashSet<String>()
     private var currentPage = 0
     private var mediaSession: HondaMediaSession? = null
     private var displayKind: DisplayKind? = null
     private var currentNavigation: HondaDisplayText? = null
+    private var replayingHistory = false
     private var pendingAction: Runnable? = null
 
     @Synchronized
@@ -37,8 +39,27 @@ object MessageDisplayCoordinator {
             recentKeys.remove(recentKeys.first())
         }
 
-        pages += MessageFormatter.formatPages(sender, message, source)
-        handler.post { activateMessages(context.applicationContext) }
+        val newPages = MessageFormatter.formatPages(sender, message, source)
+        messageHistory += newPages
+        while (messageHistory.size > MAX_MESSAGE_HISTORY) {
+            messageHistory.removeAt(0)
+        }
+
+        val interruptedReplay = replayingHistory
+        if (interruptedReplay) {
+            pages.clear()
+            pages += newPages
+            currentPage = 0
+            replayingHistory = false
+        } else {
+            pages += newPages
+        }
+        handler.post {
+            activateMessages(
+                context = context.applicationContext,
+                forceRefresh = interruptedReplay,
+            )
+        }
     }
 
     @Synchronized
@@ -62,8 +83,8 @@ object MessageDisplayCoordinator {
     @Synchronized
     fun stop(context: Context) {
         cancelPendingAction()
-        pages.clear()
-        currentPage = 0
+        clearActiveMessages()
+        messageHistory.clear()
         displayKind = null
         currentNavigation = null
         navigationPolicy.reset()
@@ -73,12 +94,12 @@ object MessageDisplayCoordinator {
     }
 
     @Synchronized
-    private fun activateMessages(context: Context) {
+    private fun activateMessages(context: Context, forceRefresh: Boolean = false) {
         if (pages.isEmpty() || !AppState.isEnabled(context)) return
 
-        if (displayKind != DisplayKind.MESSAGES) {
+        if (displayKind != DisplayKind.MESSAGES || forceRefresh) {
             if (displayKind == DisplayKind.NAVIGATION) navigationPolicy.expireCurrent()
-            currentPage = 0
+            if (!forceRefresh) currentPage = 0
             displayKind = DisplayKind.MESSAGES
             currentNavigation = null
             getSession(context).showMessage(pages[currentPage])
@@ -89,7 +110,8 @@ object MessageDisplayCoordinator {
     @Synchronized
     private fun activateWelcome(context: Context, welcome: HondaDisplayText) {
         if (!AppState.isEnabled(context)) return
-        pages.clear()
+        clearActiveMessages()
+        messageHistory.clear()
         pages += welcome
         currentPage = 0
         displayKind = DisplayKind.MESSAGES
@@ -134,8 +156,10 @@ object MessageDisplayCoordinator {
     @Synchronized
     private fun handleNext() {
         when (displayKind) {
-            DisplayKind.MESSAGES -> moveNext()
-            DisplayKind.NAVIGATION -> dismissNavigationAndForward(KeyEvent.KEYCODE_MEDIA_NEXT)
+            DisplayKind.MESSAGES -> {
+                if (replayingHistory) moveTowardNewest() else moveNext()
+            }
+            DisplayKind.NAVIGATION -> mediaSession?.skipSpotifyNext()
             null -> Unit
         }
     }
@@ -143,10 +167,28 @@ object MessageDisplayCoordinator {
     @Synchronized
     private fun handlePrevious() {
         when (displayKind) {
-            DisplayKind.MESSAGES -> movePrevious()
-            DisplayKind.NAVIGATION -> dismissNavigationAndForward(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            DisplayKind.MESSAGES -> {
+                if (replayingHistory) moveTowardOlder() else movePrevious()
+            }
+            DisplayKind.NAVIGATION -> showNewestMessageHistory()
             null -> Unit
         }
+    }
+
+    @Synchronized
+    private fun showNewestMessageHistory() {
+        if (displayKind != DisplayKind.NAVIGATION || messageHistory.isEmpty()) return
+
+        cancelPendingAction()
+        navigationPolicy.expireCurrent()
+        pages.clear()
+        messageHistory.asReversed().forEach(pages::addAll)
+        currentPage = 0
+        replayingHistory = true
+        displayKind = DisplayKind.MESSAGES
+        currentNavigation = null
+        mediaSession?.showMessage(pages[currentPage])
+        scheduleMessageAction()
     }
 
     @Synchronized
@@ -173,20 +215,43 @@ object MessageDisplayCoordinator {
     }
 
     @Synchronized
-    private fun dismissNavigationAndForward(keyCode: Int) {
-        if (displayKind != DisplayKind.NAVIGATION) return
+    private fun moveTowardOlder() {
+        if (pages.isEmpty()) return
 
-        cancelPendingAction()
-        navigationPolicy.dismissCurrent()
-        displayKind = null
-        currentNavigation = null
-        mediaSession?.hide()
-        mediaSession?.forwardMediaKey(keyCode)
+        if (currentPage == pages.lastIndex) {
+            expireMessages()
+            return
+        }
+
+        currentPage += 1
+        mediaSession?.showMessage(pages[currentPage])
+        scheduleMessageAction()
+    }
+
+    @Synchronized
+    private fun moveTowardNewest() {
+        if (pages.isEmpty()) return
+
+        if (currentPage == 0) {
+            expireMessages()
+            return
+        }
+
+        currentPage -= 1
+        mediaSession?.showMessage(pages[currentPage])
+        scheduleMessageAction()
     }
 
     @Synchronized
     private fun scheduleMessageAction() {
         cancelPendingAction()
+        if (replayingHistory) {
+            pendingAction = Runnable { expireMessages() }.also {
+                handler.postDelayed(it, LAST_PAGE_TIME_MS)
+            }
+            return
+        }
+
         val delay = if (currentPage < pages.lastIndex) AUTO_ADVANCE_MS else LAST_PAGE_TIME_MS
         pendingAction = Runnable { advanceMessagesAutomatically() }.also {
             handler.postDelayed(it, delay)
@@ -209,8 +274,9 @@ object MessageDisplayCoordinator {
     @Synchronized
     private fun expireMessages() {
         cancelPendingAction()
-        pages.clear()
-        currentPage = 0
+        val clearHistory = replayingHistory
+        clearActiveMessages()
+        if (clearHistory) messageHistory.clear()
         displayKind = null
         mediaSession?.hide()
     }
@@ -233,9 +299,14 @@ object MessageDisplayCoordinator {
         }
     }
 
+    private fun clearActiveMessages() {
+        pages.clear()
+        currentPage = 0
+        replayingHistory = false
+    }
+
     private fun cancelPendingAction() {
         pendingAction?.let(handler::removeCallbacks)
         pendingAction = null
     }
-
 }
